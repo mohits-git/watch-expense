@@ -459,7 +459,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Advance'
+                  $ref: '#/components/schemas/AdvanceRequest'
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -650,6 +650,9 @@ paths:
                     endDate:
                       type: string
                       format: date
+                    budget:
+                      type: number
+                      format: float
                     employees:
                       type: array
                       items:
@@ -723,6 +726,9 @@ paths:
                   endDate:
                     type: string
                     format: date
+                  budget:
+                    type: number
+                    format: float
                   employees:
                     type: array
                     items:
@@ -839,6 +845,9 @@ paths:
               properties:
                 name:
                   type: string
+                budget:
+                  type: number
+                  format: float
       responses:
         '201':
           description: Department created successfully
@@ -874,12 +883,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: integer
-                  name:
-                    type: string
+                $ref: '#/components/schemas/Department'
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -1208,6 +1212,9 @@ components:
         endDate:
           type: string
           format: date
+        budget:
+          type: number
+          format: float
     Department:
       type: object
       properties:
@@ -1215,6 +1222,9 @@ components:
           type: integer
         name:
           type: string
+        budget:
+          type: number
+          format: float
   securitySchemes:
     BearerAuth:
       type: http
