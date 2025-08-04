@@ -7,6 +7,19 @@ info:
 servers:
   - url: http://localhost:8080/api/v1
     description: Development server
+tags:
+  - name: Auth
+    description: Authentication endpoints
+  - name: User
+    description: User management endpoints (admin only)
+  - name: Expense
+    description: Expense management endpoints
+  - name: Advance
+    description: Advance request management endpoints
+  - name: Projects
+    description: Project management endpoints (admin only)
+  - name: Departments
+    description: Department management endpoints (admin only)
 paths:
   /auth/login:
     post:
@@ -422,6 +435,37 @@ paths:
           $ref: '#/components/responses/NotFoundError'
       security:
       - BearerAuth: []
+  /users/{id}/advance-requests:
+    get:
+      tags:
+        - Advance
+      summary: Get advance requets by user ID (employee and manager/admin)
+      description: Retrieve a list of advance requests for a specific user by their ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            description: User ID to filter advance requests
+        - $ref: '#/components/parameters/status'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: List of advance request for the user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Advance'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+      security:
+        - BearerAuth: []
   /advance-requests:
     get:
       tags:
