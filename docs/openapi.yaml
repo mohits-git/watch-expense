@@ -2,14 +2,16 @@ openapi: 3.1.1
 info:
   title: WatchExpense API
   version: 1.0.0
-  summary: API for expense reimbursement management
-  description: This API is for the application WatchExpense, which helps users request and manage expense reimbursements and approvals.
+  summary: WatchExpense API Documentation
+  description: WatchExpense is a comprehensive expense management system designed to streamline the process of managing expenses, advance requests, and user accounts. It provides features for user authentication, role-based access control, and detailed expense tracking.
 servers:
   - url: http://localhost:8080/api/v1
     description: Development server
 paths:
   /auth/login:
     post:
+      tags:
+        - Auth
       summary: User login
       description: Authenticate a user and set a Bearer (JWT token) cookie.
       requestBody:
@@ -42,6 +44,8 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
   /auth/logout:
     post:
+      tags:
+        - Auth
       summary: User logout
       description: Invalidate the Bearer token and clear the cookie.
       responses:
@@ -62,8 +66,12 @@ paths:
                     example: Successfully logged out
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+      security:
+        - BearerAuth: []
   /users:
     get:
+      tags:
+        - User
       summary: Get all users (admin only)
       description: Retrieve a list of all registered users.
       parameters:
@@ -87,7 +95,11 @@ paths:
                   $ref: '#/components/schemas/User'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+      security:
+        - BearerAuth: []
     post:
+      tags:
+        - User
       summary: Create a new user (admin only)
       description: Create a new user account.
       requestBody:
@@ -121,8 +133,12 @@ paths:
           $ref: '#/components/responses/BadRequestError'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+      security:
+        - BearerAuth: []
   /users/{id}:
     get:
+      tags:
+        - User
       summary: Get user by ID (user and admin)
       description: Retrieve a user by their ID.
       parameters:
@@ -154,7 +170,11 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+      security:
+        - BearerAuth: []
     put:
+      tags:
+        - User
       summary: Update user by ID (admin only)
       description: Update user details by their ID.
       parameters:
@@ -194,7 +214,11 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+      security:
+        - BearerAuth: []
     delete:
+      tags:
+        - User
       summary: Delete user by ID (admin only)
       description: Delete a user by their ID.
       parameters:
@@ -212,8 +236,12 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+      security:
+        - BearerAuth: []
   /users/{id}/expenses:
     get:
+      tags:
+        - Expense
       summary: Get expenses by user ID (employee and manager/admin)
       description: Retrieve a list of expenses for a specific user by their ID.
       parameters:
@@ -239,8 +267,12 @@ paths:
           $ref: '#/components/responses/BadRequestError'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+      security:
+        - BearerAuth: []
   /expenses:
     get:
+      tags:
+        - Expense
       summary: Get all expenses (based on role)
       description: Retrieve a list of expenses based on user role and the filters passed.
       parameters:
@@ -258,7 +290,11 @@ paths:
                   $ref: '#/components/schemas/Expense'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+      security:
+      - BearerAuth: []
     post:
+      tags:
+        - Expense
       summary: Create a new expense (employee only)
       description: Create a new expense request.
       requestBody:
@@ -290,8 +326,12 @@ paths:
           $ref: '#/components/responses/BadRequestError'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+      security:
+      - BearerAuth: []
   /expenses/{id}:
     get:
+      tags:
+        - Expense
       summary: Get expense by ID (employee and manager/admin)
       description: Retrieve an expense by its ID.
       parameters:
@@ -313,7 +353,11 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+      security:
+      - BearerAuth: []
     put:
+      tags:
+        - Expense
       summary: Update expense by ID (employee and manager/admin)
       description: Update an existing expense by its ID.
       parameters:
@@ -354,7 +398,11 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+      security:
+      - BearerAuth: []
     delete:
+      tags:
+        - Expense
       summary: Delete expense by ID (employee and manager/admin)
       description: Delete an expense by its ID.
       parameters:
@@ -372,8 +420,12 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+      security:
+      - BearerAuth: []
   /advance-requests:
     get:
+      tags:
+        - Advance
       summary: Get all advance requests (based on role)
       description: Retrieve a list of advance requests based on user role and the filters passed.
       parameters:
@@ -391,7 +443,11 @@ paths:
                   $ref: '#/components/schemas/AdvanceRequest'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+      security:
+      - BearerAuth: []
     post:
+      tags:
+        - Advance
       summary: Create a new advance request (employee only)
       description: Create a new advance request.
       requestBody:
@@ -423,8 +479,12 @@ paths:
           $ref: '#/components/responses/BadRequestError'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+      security:
+      - BearerAuth: []
   /advance-requests/{id}:
     get:
+      tags:
+        - Advance
       summary: Get advance request by ID (employee and manager/admin)
       description: Retrieve an advance request by its ID.
       parameters:
@@ -446,7 +506,11 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+      security:
+      - BearerAuth: []
     put:
+      tags:
+        - Advance
       summary: Update advance request by ID (employee and manager/admin)
       description: Update an existing advance request by its ID.
       parameters:
@@ -487,7 +551,11 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+      security:
+      - BearerAuth: []
     delete:
+      tags:
+        - Advance
       summary: Delete advance request by ID (employee and manager/admin)
       description: Delete an advance request by its ID.
       parameters:
@@ -505,8 +573,12 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+      security:
+      - BearerAuth: []
   /admin/projects:
     get:
+      tags:
+        - Projects
       summary: Get all projects (admin only)
       description: Retrieve a list of all projects.
       parameters:
@@ -545,7 +617,11 @@ paths:
                             type: string
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+      security:
+      - BearerAuth: []
     post:
+      tags:
+        - Projects
       summary: Create a new project (admin only)
       description: Create a new project.
       requestBody:
@@ -569,8 +645,12 @@ paths:
           $ref: '#/components/responses/BadRequestError'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+      security:
+      - BearerAuth: []
   /admin/projects/{id}:
     get:
+      tags:
+        - Projects
       summary: Get project by ID (admin only)
       description: Retrieve a project by its ID.
       parameters:
@@ -614,7 +694,11 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+      security:
+      - BearerAuth: []
     put:
+      tags:
+        - Projects
       summary: Update project by ID (admin only)
       description: Update project details by its ID.
       parameters:
@@ -646,7 +730,11 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+      security:
+      - BearerAuth: []
     delete:
+      tags:
+        - Projects
       summary: Delete project by ID (admin only)
       description: Delete a project by its ID.
       parameters:
@@ -664,8 +752,12 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+      security:
+      - BearerAuth: []
   /admin/departments:
     get:
+      tags:
+        - Departments
       summary: Get all departments (admin only)
       description: Retrieve a list of all departments.
       parameters:
@@ -687,7 +779,11 @@ paths:
                       type: string
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+      security:
+      - BearerAuth: []
     post:
+      tags:
+        - Departments
       summary: Create a new department (admin only)
       description: Create a new department.
       requestBody:
@@ -714,8 +810,12 @@ paths:
           $ref: '#/components/responses/BadRequestError'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+      security:
+      - BearerAuth: []
   /admin/departments/{id}:
     get:
+      tags:
+        - Departments
       summary: Get department by ID (admin only)
       description: Retrieve a department by its ID.
       parameters:
@@ -742,7 +842,11 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+      security:
+      - BearerAuth: []
     put:
+      tags:
+        - Departments
       summary: Update department by ID (admin only)
       description: Update department details by its ID.
       parameters:
@@ -777,7 +881,11 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+      security:
+      - BearerAuth: []
     delete:
+      tags:
+        - Departments
       summary: Delete department by ID (admin only)
       description: Delete a department by its ID.
       parameters:
@@ -795,8 +903,12 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+      security:
+      - BearerAuth: []
   /admin/projects/{projectId}/employees:
     post:
+      tags:
+        - Projects
       summary: Add employee to project (admin only)
       description: Add an employee to a project.
       parameters:
@@ -831,7 +943,11 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+      security:
+      - BearerAuth: []
     delete:
+      tags:
+        - Projects
       summary: Remove employee from project (admin only)
       description: Remove an employee from a project.
       parameters:
@@ -854,8 +970,12 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+      security:
+      - BearerAuth: []
   /admin/departments/{departmentId}/employees:
     post:
+      tags:
+        - Departments
       summary: Add employee to department (admin only)
       description: Add an employee to a department.
       parameters:
@@ -890,7 +1010,11 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+      security:
+      - BearerAuth: []
     delete:
+      tags:
+        - Departments
       summary: Remove employee from department (admin only)
       description: Remove an employee from a department.
       parameters:
@@ -913,6 +1037,8 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+      security:
+      - BearerAuth: []
 components:
   parameters:
     status:
@@ -1045,3 +1171,8 @@ components:
           type: integer
         name:
           type: string
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

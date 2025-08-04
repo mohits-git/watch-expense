@@ -14,7 +14,9 @@ echo "Setting up Swagger UI..."
 # Download Swagger UI dist
 curl -L "https://github.com/swagger-api/swagger-ui/archive/refs/tags/${SWAGGER_UI_VERSION}.zip" -o swagger-ui.zip
 unzip swagger-ui.zip
+mkdir -p "$TARGET_DIR"
 cp -r "swagger-ui-${SWAGGER_UI_VERSION#v}/dist"/* "$TARGET_DIR"
+chmod -R 755 "$TARGET_DIR"
 rm -rf "swagger-ui-${SWAGGER_UI_VERSION#v}" swagger-ui.zip
 
 # Create swagger-initializer.js
