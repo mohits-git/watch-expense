@@ -1,3 +1,4 @@
 watch-expense
 .env
 docs/swagger/
+bin/
