@@ -55,6 +55,8 @@ paths:
                     type: string
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   /auth/logout:
     post:
       tags:
@@ -79,6 +81,35 @@ paths:
                     example: Successfully logged out
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - BearerAuth: []
+  /auth/me:
+    get:
+      tags:
+        - Auth
+      summary: Get current user details
+      description: Retrieve the details of the currently authenticated user.
+      responses:
+        '200':
+          description: Current user details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User retrieved successfully
+                  data:
+                    $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
       security:
         - BearerAuth: []
   /users:
@@ -103,11 +134,19 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/User'
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Users retrieved successfully
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
       security:
         - BearerAuth: []
     post:
@@ -146,13 +185,15 @@ paths:
           $ref: '#/components/responses/BadRequestError'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
       security:
         - BearerAuth: []
   /users/{id}:
     get:
       tags:
         - User
-      summary: Get user by ID (user and admin)
+      summary: Get user by ID (admin only)
       description: Retrieve a user by their ID.
       parameters:
         - name: id
@@ -168,21 +209,19 @@ paths:
               schema:
                 type: object
                 properties:
-                  id:
-                    type: integer
-                  name:
+                  message:
                     type: string
-                  email:
-                    type: string
-                  role:
-                    type: string
-                    enum: [EMPLOYEE, PROJECT_MANGER, MANAGER, ADMIN]
+                    example: User retrieved successfully
+                  data:
+                    $ref: '#/components/schemas/User'
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
       security:
         - BearerAuth: []
     put:
@@ -227,6 +266,8 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
       security:
         - BearerAuth: []
     delete:
@@ -249,6 +290,8 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
       security:
         - BearerAuth: []
   /users/{id}/expenses:
@@ -273,13 +316,21 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Expense'
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Expenses retrieved successfully
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Expense'
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
       security:
         - BearerAuth: []
   /expenses:
@@ -298,11 +349,19 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Expense'
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Expenses retrieved successfully
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Expense'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
       security:
       - BearerAuth: []
     post:
@@ -339,6 +398,8 @@ paths:
           $ref: '#/components/responses/BadRequestError'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
       security:
       - BearerAuth: []
   /expenses/{id}:
@@ -359,13 +420,21 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Expense'
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Expense retrieved successfully
+                  data:
+                    $ref: '#/components/schemas/Expense'
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
       security:
       - BearerAuth: []
     put:
@@ -392,8 +461,7 @@ paths:
                 description:
                   type: string
                 status:
-                  type: string
-                  enum: [PENDING, APPROVED, REJECTED]
+                  $ref: '#/components/schemas/status'
       responses:
         '200':
           description: Expense updated successfully
@@ -411,6 +479,8 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
       security:
       - BearerAuth: []
     delete:
@@ -433,6 +503,85 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+  /expenses/{id}/review:
+    post:
+      tags:
+        - Expense
+      summary: Review expense by ID (project manager or manager for higher value expenses)
+      description: Review an expense by its ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  $ref: '#/components/schemas/status'
+                comment:
+                  type: string
+      responses:
+        '200':
+          description: Expense reviewed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Expense reviewed successfully
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+  /expenses/{id}/approve:
+    post:
+      tags:
+        - Expense
+      summary: Approve expense by ID (manager/admin only)
+      description: Approve an expense request by its ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Expense approved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Expense approved successfully
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
       security:
       - BearerAuth: []
   /users/{id}/advance-requests:
@@ -457,13 +606,21 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/AdvanceRequest'
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Advance requests retrieved successfully
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AdvanceRequest'
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
       security:
         - BearerAuth: []
   /advance-requests:
@@ -482,9 +639,15 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/AdvanceRequest'
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Advance requests retrieved successfully
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AdvanceRequest'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
       security:
@@ -523,6 +686,8 @@ paths:
           $ref: '#/components/responses/BadRequestError'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
       security:
       - BearerAuth: []
   /advance-requests/{id}:
@@ -543,13 +708,21 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AdvanceRequest'
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Advance request retrieved successfully
+                  data:
+                    $ref: '#/components/schemas/AdvanceRequest'
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
       security:
       - BearerAuth: []
     put:
@@ -576,8 +749,7 @@ paths:
                 description:
                   type: string
                 status:
-                  type: string
-                  enum: [PENDING, APPROVED, REJECTED]
+                  $ref: '#/components/schemas/status'
       responses:
         '200':
           description: Advance request updated successfully
@@ -595,6 +767,8 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
       security:
       - BearerAuth: []
     delete:
@@ -617,6 +791,85 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+  /advance-requests/{id}/review:
+    post:
+      tags:
+        - Advance
+      summary: Review advance request by ID (project manager or manager for higher value requests)
+      description: Review an advance request by its ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  $ref: '#/components/schemas/status'
+                comment:
+                  type: string
+      responses:
+        '200':
+          description: Advance request reviewed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Advance request reviewed successfully
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+  /advance-requests/{id}/approve:
+    post:
+      tags:
+        - Advance
+      summary: Approve advance request by ID (manager/admin only)
+      description: Approve an advance request by its ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Advance request approved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Advance request approved successfully
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
       security:
       - BearerAuth: []
   /admin/projects:
@@ -634,36 +887,19 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id:
-                      type: integer
-                    name:
-                      type: string
-                    description:
-                      type: string
-                    startDate:
-                      type: string
-                      format: date
-                    endDate:
-                      type: string
-                      format: date
-                    budget:
-                      type: number
-                      format: float
-                    employees:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          id:
-                            type: integer
-                          name:
-                            type: string
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Projects retrieved successfully
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProjectWithEmployees'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
       security:
       - BearerAuth: []
     post:
@@ -692,6 +928,8 @@ paths:
           $ref: '#/components/responses/BadRequestError'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
       security:
       - BearerAuth: []
   /admin/projects/{id}:
@@ -714,36 +952,19 @@ paths:
               schema:
                 type: object
                 properties:
-                  id:
-                    type: integer
-                  name:
+                  message:
                     type: string
-                  description:
-                    type: string
-                  startDate:
-                    type: string
-                    format: date
-                  endDate:
-                    type: string
-                    format: date
-                  budget:
-                    type: number
-                    format: float
-                  employees:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        id:
-                          type: integer
-                        name:
-                          type: string
+                    example: Project retrieved successfully
+                  data:
+                    $ref: '#/components/schemas/ProjectWithEmployees'
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
       security:
       - BearerAuth: []
     put:
@@ -780,6 +1001,8 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
       security:
       - BearerAuth: []
     delete:
@@ -802,6 +1025,8 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
       security:
       - BearerAuth: []
   /admin/departments:
@@ -819,16 +1044,19 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id:
-                      type: integer
-                    name:
-                      type: string
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Departments retrieved successfully
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DepartmentWithEmployees'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
       security:
       - BearerAuth: []
     post:
@@ -848,6 +1076,8 @@ paths:
                 budget:
                   type: number
                   format: float
+                managerId:
+                  type: integer
       responses:
         '201':
           description: Department created successfully
@@ -863,6 +1093,8 @@ paths:
           $ref: '#/components/responses/BadRequestError'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
       security:
       - BearerAuth: []
   /admin/departments/{id}:
@@ -883,13 +1115,21 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Department'
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Department retrieved successfully
+                  data:
+                    $ref: '#/components/schemas/DepartmentWithEmployees'
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
       security:
       - BearerAuth: []
     put:
@@ -912,6 +1152,11 @@ paths:
               properties:
                 name:
                   type: string
+                budget:
+                  type: number
+                  format: float
+                managerId:
+                  type: integer
       responses:
         '200':
           description: Department updated successfully
@@ -929,6 +1174,8 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
       security:
       - BearerAuth: []
     delete:
@@ -951,6 +1198,8 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
       security:
       - BearerAuth: []
   /admin/projects/{projectId}/employees:
@@ -991,6 +1240,8 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
       security:
       - BearerAuth: []
     delete:
@@ -1018,6 +1269,8 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
       security:
       - BearerAuth: []
   /admin/departments/{departmentId}/employees:
@@ -1058,6 +1311,8 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
       security:
       - BearerAuth: []
     delete:
@@ -1085,6 +1340,8 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
       security:
       - BearerAuth: []
 components:
@@ -1094,9 +1351,7 @@ components:
       in: query
       required: false
       schema:
-        type: string
-        enum: [PENDING, APPROVED, REJECTED]
-        description: Filter by advance request status
+        $ref: '#/components/schemas/status'
     page:
       name: page
       in: query
@@ -1154,7 +1409,20 @@ components:
               error:
                 type: string
                 example: Resource not found
+    InternalServerError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: An unexpected error occurred
   schemas:
+    status:
+      type: string
+      enum: [PENDING, REVIEWED, APPROVED, REJECTED]
     User:
       type: object
       properties:
@@ -1215,6 +1483,8 @@ components:
         budget:
           type: number
           format: float
+        managerId:
+          type: integer
     Department:
       type: object
       properties:
@@ -1225,6 +1495,48 @@ components:
         budget:
           type: number
           format: float
+        managerId:
+          type: integer
+    ProjectWithEmployees:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        budget:
+          type: number
+          format: float
+        managerId:
+          type: integer
+        employees:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+    DepartmentWithEmployees:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        budget:
+          type: number
+          format: float
+        managerId:
+          type: integer
+        employees:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
   securitySchemes:
     BearerAuth:
       type: http
