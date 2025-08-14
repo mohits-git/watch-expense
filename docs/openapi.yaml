@@ -3,7 +3,7 @@ info:
   title: WatchExpense API
   version: 1.0.0
   summary: WatchExpense API Documentation
-  description: WatchExpense is a comprehensive expense management system designed to streamline the process of managing expenses, advance requests, and user accounts. It provides features for user authentication, role-based access control, and detailed expense tracking.
+  description: WatchExpense is a comprehensive expense reimbursement system designed to streamline the process of managing expenses, advance requests, and user accounts. It provides features for user authentication, role-based access control, and detailed expense tracking.
 servers:
   - url: http://localhost:8080/api/v1
     description: Development server
@@ -1069,15 +1069,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                budget:
-                  type: number
-                  format: float
-                managerId:
-                  type: integer
+              $ref: '#/components/schemas/Department'
       responses:
         '201':
           description: Department created successfully
@@ -1148,15 +1140,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                budget:
-                  type: number
-                  format: float
-                managerId:
-                  type: integer
+              $ref: '#/components/schemas/Department'
       responses:
         '200':
           description: Department updated successfully
@@ -1435,6 +1419,12 @@ components:
         role:
           type: string
           enum: [EMPLOYEE, MANAGER, ADMIN]
+        balance:
+          type: integer
+        project_id:
+          type: string
+        department_id:
+          type: string
     Expense:
       type: object
       properties:
@@ -1449,7 +1439,34 @@ components:
           type: string
         status:
           type: string
-          enum: [PENDING, APPROVED, REJECTED]
+          enum: [PENDING, REVIEWED, APPROVED, REJECTED]
+        purpose:
+          type: string
+        approved_by:
+          type: string
+        approved_at:
+          type: string
+        reviewed_by:
+          type: string
+        reviewed_at:
+          type: string
+        is_reconcilled:
+          type: boolean
+        bills:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              amount:
+                type: integer
+              expense_id:
+                type: string
+              description:
+                type: string
+              attachment_url:
+                type: string
     AdvanceRequest:
       type: object
       properties:
@@ -1464,7 +1481,19 @@ components:
           type: string
         status:
           type: string
-          enum: [PENDING, APPROVED, REJECTED]
+          enum: [PENDING, REVIEWED, APPROVED, REJECTED]
+        purpose:
+          type: string
+        reconcilled_expense_id:
+          type: string
+        approved_by:
+          type: string
+        approved_at:
+          type: string
+        reviewed_by:
+          type: string
+        reviewed_at:
+          type: string
     Project:
       type: object
       properties:
@@ -1483,8 +1512,10 @@ components:
         budget:
           type: number
           format: float
-        managerId:
-          type: integer
+        project_manager_id:
+          type: string
+        department_id:
+          type: string
     Department:
       type: object
       properties:
@@ -1495,48 +1526,26 @@ components:
         budget:
           type: number
           format: float
-        managerId:
-          type: integer
+        manager_id:
+          type: string
     ProjectWithEmployees:
-      type: object
-      properties:
-        id:
-          type: integer
-        name:
-          type: string
-        description:
-          type: string
-        startDate:
-          type: string
-          format: date
-        endDate:
-          type: string
-          format: date
-        budget:
-          type: number
-          format: float
-        managerId:
-          type: integer
-        employees:
-          type: array
-          items:
-            $ref: '#/components/schemas/User'
+      allOf:
+        - $ref: '#/components/schemas/Project'
+        - type: object
+          properties:
+            employees:
+              type: array
+              items:
+                $ref: '#/components/schemas/User'
     DepartmentWithEmployees:
-      type: object
-      properties:
-        id:
-          type: integer
-        name:
-          type: string
-        budget:
-          type: number
-          format: float
-        managerId:
-          type: integer
-        employees:
-          type: array
-          items:
-            $ref: '#/components/schemas/User'
+      allOf:
+        - $ref: '#/components/schemas/Department'
+        - type: object
+          properties:
+            employees:
+              type: array
+              items:
+                $ref: '#/components/schemas/User'
   securitySchemes:
     BearerAuth:
       type: http
