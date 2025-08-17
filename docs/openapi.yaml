@@ -507,12 +507,11 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
       - BearerAuth: []
-  /expenses/{id}/review:
-    post:
+    patch:
       tags:
         - Expense
-      summary: Review expense by ID (project manager or manager for higher value expenses)
-      description: Review an expense by its ID.
+      summary: Review or Approve an expense by ID (project manager, manager and admins for higher value expenses)
+      description: Review or Approve an expense by its ID.
       parameters:
         - name: id
           in: path
@@ -528,8 +527,6 @@ paths:
               properties:
                 status:
                   $ref: '#/components/schemas/status'
-                comment:
-                  type: string
       responses:
         '200':
           description: Expense reviewed successfully
@@ -541,39 +538,6 @@ paths:
                   message:
                     type: string
                     example: Expense reviewed successfully
-        '400':
-          $ref: '#/components/responses/BadRequestError'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '404':
-          $ref: '#/components/responses/NotFoundError'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-      security:
-      - BearerAuth: []
-  /expenses/{id}/approve:
-    post:
-      tags:
-        - Expense
-      summary: Approve expense by ID (manager/admin only)
-      description: Approve an expense request by its ID.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Expense approved successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: Expense approved successfully
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -795,12 +759,11 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
       - BearerAuth: []
-  /advance-requests/{id}/review:
-    post:
+    patch:
       tags:
         - Advance
-      summary: Review advance request by ID (project manager or manager for higher value requests)
-      description: Review an advance request by its ID.
+      summary: Review or Approve advance request by ID (project manager, manager or admin for higher value requests)
+      description: Review or Approve an advance request by its ID.
       parameters:
         - name: id
           in: path
@@ -816,8 +779,6 @@ paths:
               properties:
                 status:
                   $ref: '#/components/schemas/status'
-                comment:
-                  type: string
       responses:
         '200':
           description: Advance request reviewed successfully
@@ -829,39 +790,6 @@ paths:
                   message:
                     type: string
                     example: Advance request reviewed successfully
-        '400':
-          $ref: '#/components/responses/BadRequestError'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '404':
-          $ref: '#/components/responses/NotFoundError'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-      security:
-      - BearerAuth: []
-  /advance-requests/{id}/approve:
-    post:
-      tags:
-        - Advance
-      summary: Approve advance request by ID (manager/admin only)
-      description: Approve an advance request by its ID.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Advance request approved successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: Advance request approved successfully
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -1186,7 +1114,7 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
       - BearerAuth: []
-  /admin/projects/{projectId}/employees:
+  /admin/projects/{projectId}/employees/{employeeId}:
     post:
       tags:
         - Projects
@@ -1198,15 +1126,11 @@ paths:
           required: true
           schema:
             type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                employeeId:
-                  type: integer
+        - name: employeeId
+          in: path
+          required: true
+          schema:
+            type: integer
       responses:
         '200':
           description: Employee added to project successfully
@@ -1240,7 +1164,7 @@ paths:
           schema:
             type: integer
         - name: employeeId
-          in: query
+          in: path
           required: true
           schema:
             type: integer
@@ -1257,7 +1181,7 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
       - BearerAuth: []
-  /admin/departments/{departmentId}/employees:
+  /admin/departments/{departmentId}/employees/{employeeId}:
     post:
       tags:
         - Departments
@@ -1269,15 +1193,11 @@ paths:
           required: true
           schema:
             type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                employeeId:
-                  type: integer
+        - name: employeeId
+          in: path
+          required: true
+          schema:
+            type: integer
       responses:
         '200':
           description: Employee added to department successfully
@@ -1311,7 +1231,7 @@ paths:
           schema:
             type: integer
         - name: employeeId
-          in: query
+          in: path
           required: true
           schema:
             type: integer
@@ -1421,9 +1341,9 @@ components:
           enum: [EMPLOYEE, MANAGER, ADMIN]
         balance:
           type: integer
-        project_id:
+        projectId:
           type: string
-        department_id:
+        departmentId:
           type: string
     Expense:
       type: object
@@ -1442,15 +1362,15 @@ components:
           enum: [PENDING, REVIEWED, APPROVED, REJECTED]
         purpose:
           type: string
-        approved_by:
+        approvedBy:
           type: string
-        approved_at:
+        approvedAt:
           type: string
-        reviewed_by:
+        reviewedBy:
           type: string
-        reviewed_at:
+        reviewedAt:
           type: string
-        is_reconcilled:
+        isReconcilled:
           type: boolean
         bills:
           type: array
@@ -1461,11 +1381,11 @@ components:
                 type: string
               amount:
                 type: integer
-              expense_id:
+              expenseId:
                 type: string
               description:
                 type: string
-              attachment_url:
+              attachmentUrl:
                 type: string
     AdvanceRequest:
       type: object
@@ -1484,15 +1404,15 @@ components:
           enum: [PENDING, REVIEWED, APPROVED, REJECTED]
         purpose:
           type: string
-        reconcilled_expense_id:
+        reconcilledExpenseId:
           type: string
-        approved_by:
+        approvedBy:
           type: string
-        approved_at:
+        approvedAt:
           type: string
-        reviewed_by:
+        reviewedBy:
           type: string
-        reviewed_at:
+        reviewedAt:
           type: string
     Project:
       type: object
@@ -1512,9 +1432,9 @@ components:
         budget:
           type: number
           format: float
-        project_manager_id:
+        projectManagerId:
           type: string
-        department_id:
+        departmentId:
           type: string
     Department:
       type: object
@@ -1526,7 +1446,7 @@ components:
         budget:
           type: number
           format: float
-        manager_id:
+        managerId:
           type: string
     ProjectWithEmployees:
       allOf:
