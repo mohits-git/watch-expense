@@ -159,17 +159,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                email:
-                  type: string
-                password:
-                  type: string
-                role:
-                  type: string
-                  enum: [EMPLOYEE, PROJECT_MANGER, MANAGER, ADMIN]
+              $ref: '#/components/schemas/User'
       responses:
         '201':
           description: User created successfully
@@ -240,15 +230,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                email:
-                  type: string
-                role:
-                  type: string
-                  enum: [EMPLOYEE, PROJECT_MANGER, MANAGER, ADMIN]
+              $ref: '#/components/schemas/User'
       responses:
         '200':
           description: User updated successfully
@@ -374,15 +356,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                userId:
-                  type: integer
-                amount:
-                  type: number
-                  format: float
-                description:
-                  type: string
+              $ref: '#/components/schemas/Expense'
       responses:
         '201':
           description: Expense created successfully
@@ -453,15 +427,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                amount:
-                  type: number
-                  format: float
-                description:
-                  type: string
-                status:
-                  $ref: '#/components/schemas/status'
+              $ref: '#/components/schemas/Expense'
       responses:
         '200':
           description: Expense updated successfully
@@ -626,15 +592,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                userId:
-                  type: integer
-                amount:
-                  type: number
-                  format: float
-                description:
-                  type: string
+              $ref: '#/components/schemas/AdvanceRequest'
       responses:
         '201':
           description: Advance request created successfully
@@ -705,15 +663,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                amount:
-                  type: number
-                  format: float
-                description:
-                  type: string
-                status:
-                  $ref: '#/components/schemas/status'
+              $ref: '#/components/schemas/AdvanceRequest'
       responses:
         '200':
           description: Advance request updated successfully
@@ -1132,7 +1082,7 @@ paths:
           schema:
             type: integer
       responses:
-        '200':
+        '201':
           description: Employee added to project successfully
           content:
             application/json:
@@ -1142,6 +1092,16 @@ paths:
                   message:
                     type: string
                     example: Employee added to project successfully
+        '200':
+          description: Employee already part of the project
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Employee already part of the project
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -1199,7 +1159,7 @@ paths:
           schema:
             type: integer
       responses:
-        '200':
+        '201':
           description: Employee added to department successfully
           content:
             application/json:
@@ -1209,6 +1169,16 @@ paths:
                   message:
                     type: string
                     example: Employee added to department successfully
+        '200':
+          description: Employee already belongs to this department
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Employee already belongs to this department
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
