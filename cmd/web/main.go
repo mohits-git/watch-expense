@@ -1,22 +1,27 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 
-	"github.com/mohits-git/watch-expense/internal/app"
-	"github.com/mohits-git/watch-expense/internal/config"
-	"github.com/mohits-git/watch-expense/internal/router"
+	"github.com/mohits-git/watch-expense/internal/adapters/http/handlers"
+	"github.com/mohits-git/watch-expense/internal/adapters/http/router"
 )
 
 func main() {
+	ctx := context.Background()
+
 	// Load configuration
-	cfg := config.Load()
-	// Initialize the application
-	app := app.NewApp(cfg)
-	// Initialize the router with the app instance
-	route := router.NewRouter(app).Route()
+	cfg := LoadConfig()
+
+	// handlers
+	commonHandler := handlers.NewCommonHandler()
+
+	// router
+	httpRouter := router.NewHTTPRouter(commonHandler)
+
 	// Start the HTTP server
 	log.Println("Starting server on :8080")
-	log.Fatal(http.ListenAndServe(":8080", route))
+	log.Fatal(http.ListenAndServe(":8080", httpRouter))
 }
