@@ -91,6 +91,10 @@ func (s *advanceService) UpdateAdvance(ctx context.Context, advance domain.Advan
 
 	advance.UpdatedAt = time.Now().Unix()
 	advance.CreatedAt = existingAdvance.CreatedAt
+	advance.ApprovedBy = existingAdvance.ApprovedBy
+	advance.ApprovedAt = existingAdvance.ApprovedAt
+	advance.ReviewedBy = existingAdvance.ReviewedBy
+	advance.ReviewedAt = existingAdvance.ReviewedAt
 
 	return s.advanceRepo.UpdateAdvance(ctx, advance)
 }

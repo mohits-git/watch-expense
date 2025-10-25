@@ -91,6 +91,10 @@ func (s *expenseService) UpdateExpense(ctx context.Context, expense domain.Expen
 
 	expense.UpdatedAt = time.Now().Unix()
 	expense.CreatedAt = existingExpense.CreatedAt
+	expense.ApprovedAt = existingExpense.ApprovedAt
+	expense.ApprovedBy = existingExpense.ApprovedBy
+	expense.ReviewedAt = existingExpense.ReviewedAt
+	expense.ReviewedBy = existingExpense.ReviewedBy
 
 	return s.expenseRepo.UpdateExpense(ctx, expense)
 }
@@ -165,18 +169,9 @@ func (s *expenseService) GetAllExpenses(ctx context.Context, filterOptions domai
 		return nil, 0, apperr.NewAppError(apperr.ErrUnauthorized, "unauthorized", nil)
 	}
 
-	if filterOptions.UserID != "" {
-		if !validator.ValidateUUID(filterOptions.UserID) {
-			return nil, 0, apperr.NewAppError(apperr.ErrInvalid, "invalid user ID in filter", nil)
-		}
-
-		if claims.Role != domain.Admin && filterOptions.UserID != claims.UserID {
-			return nil, 0, apperr.NewAppError(apperr.ErrForbidden, "you can only view your own expenses", nil)
-		}
-	} else {
-		if claims.Role != domain.Admin {
-			return nil, 0, apperr.NewAppError(apperr.ErrForbidden, "only admin can view all expenses", nil)
-		}
+	if claims.Role != domain.Admin {
+		filterOptions.UserID = claims.UserID
 	}
+
 	return s.expenseRepo.FindAllExpenses(ctx, filterOptions)
 }

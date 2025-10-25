@@ -11,9 +11,6 @@ func ValidateProjectCreation(project domain.Project) bool {
 	if project.DepartmentID != "" && !ValidateUUID(project.DepartmentID) {
 		return false
 	}
-	if project.ProjectManagerID != "" && !ValidateUUID(project.ProjectManagerID) {
-		return false
-	}
 
 	return true
 }
@@ -28,9 +25,5 @@ func ValidateProjectUpdate(project domain.Project) bool {
 	if project.DepartmentID != "" && !ValidateUUID(project.DepartmentID) {
 		return false
 	}
-	if project.ProjectManagerID != "" && !ValidateUUID(project.ProjectManagerID) {
-		return false
-	}
-
 	return true
 }

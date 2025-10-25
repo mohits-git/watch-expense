@@ -7,7 +7,6 @@ type Project struct {
 	Budget           float64
 	StartDate        int64
 	EndDate          int64
-	ProjectManagerID string
 	DepartmentID     string
 	CreatedAt        int64
 	UpdatedAt        int64

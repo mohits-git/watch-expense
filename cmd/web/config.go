@@ -8,10 +8,11 @@ import (
 )
 
 type Config struct {
-	MYSQL_DSN    string
-	JWT_SECRET   string
-	JWT_ISSUER   string
-	JWT_AUDIENCE string
+	MYSQL_DSN        string
+	JWT_SECRET       string
+	JWT_ISSUER       string
+	JWT_AUDIENCE     string
+	UPLOAD_DIRECTORY string
 }
 
 func LoadConfig() Config {
@@ -40,6 +41,11 @@ func LoadConfig() Config {
 	config.JWT_AUDIENCE = os.Getenv("JWT_AUDIENCE")
 	if config.JWT_AUDIENCE == "" {
 		config.JWT_AUDIENCE = "jwt_audience"
+	}
+
+	config.UPLOAD_DIRECTORY = os.Getenv("UPLOAD_DIRECTORY")
+	if config.UPLOAD_DIRECTORY == "" {
+		config.UPLOAD_DIRECTORY = "./public/images"
 	}
 
 	return config

@@ -24,3 +24,12 @@ func ValidateAdvanceUpdate(advance domain.Advance) bool {
 	}
 	return true
 }
+
+func ValidateAdvanceStatus(status domain.RequestStatus) bool {
+  switch status {
+  case domain.Pending, domain.Approved, domain.Rejected, domain.Reviewed:
+    return true
+  default:
+    return false
+  }
+}
