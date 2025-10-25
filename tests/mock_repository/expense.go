@@ -31,12 +31,7 @@ func (e *ExpenseRepository) FindExpenseById(ctx context.Context, expenseId strin
 	return args.Get(0).(domain.Expense), args.Error(1)
 }
 
-func (e *ExpenseRepository) FindExpensesByUserId(ctx context.Context, userId string) ([]domain.Expense, error) {
-	args := e.Called(ctx, userId)
-	return args.Get(0).([]domain.Expense), args.Error(1)
-}
-
-func (e *ExpenseRepository) FindAllExpenses(ctx context.Context) ([]domain.Expense, error) {
-	args := e.Called(ctx)
-	return args.Get(0).([]domain.Expense), args.Error(1)
+func (e *ExpenseRepository) FindAllExpenses(ctx context.Context, filterOptions domain.ExpensesFilterOptions) ([]domain.Expense, int, error) {
+	args := e.Called(ctx, filterOptions)
+	return args.Get(0).([]domain.Expense), args.Int(1), args.Error(2)
 }

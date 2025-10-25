@@ -21,6 +21,7 @@ type Expense struct {
 	ReviewedBy   string
 	ReviewedAt   int64
 	IsReconciled bool
+	AdvanceID    string
 	Bills        []Bill
 	CreatedAt    int64
 	UpdatedAt    int64
@@ -32,4 +33,11 @@ type Bill struct {
 	Amount        float64
 	Description   string
 	AttachmentURL string
+}
+
+type ExpensesFilterOptions struct {
+	UserID string
+	Page   int
+	Limit  int
+	Status RequestStatus
 }

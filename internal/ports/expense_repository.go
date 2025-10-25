@@ -7,9 +7,8 @@ import (
 )
 
 type ExpenseRepository interface {
-  SaveExpense(ctx context.Context, expense domain.Expense) (string, error)
-  UpdateExpense(ctx context.Context, expense domain.Expense) error
-  FindExpenseById(ctx context.Context, expenseId string) (domain.Expense, error)
-  FindExpensesByUserId(ctx context.Context, userId string) ([]domain.Expense, error)
-  FindAllExpenses(ctx context.Context) ([]domain.Expense, error)
+	SaveExpense(ctx context.Context, expense domain.Expense) (string, error)
+	UpdateExpense(ctx context.Context, expense domain.Expense) error
+	FindExpenseById(ctx context.Context, expenseId string) (domain.Expense, error)
+	FindAllExpenses(ctx context.Context, filterOptions domain.ExpensesFilterOptions) ([]domain.Expense, int, error)
 }

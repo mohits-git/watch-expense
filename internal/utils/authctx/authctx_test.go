@@ -9,7 +9,7 @@ import (
 
 func Test_authctx_NewUserClaims(t *testing.T) {
 	type args struct {
-		userID int
+		userID string
 		role   domain.UserRole
 	}
 	tests := []struct {
@@ -20,11 +20,11 @@ func Test_authctx_NewUserClaims(t *testing.T) {
 		{
 			name: "create user claims",
 			args: args{
-				userID: 1,
+				userID: "1",
 				role:   domain.Employee,
 			},
 			want: UserClaims{
-				UserID: 1,
+				UserID: "1",
 				Role:   domain.Employee,
 			},
 		},
@@ -51,7 +51,7 @@ func Test_authctx_WithUserClaims(t *testing.T) {
 			name: "add user claims to context",
 			args: args{
 				ctx:    context.Background(),
-				claims: &UserClaims{UserID: 1, Role: domain.Employee},
+				claims: &UserClaims{UserID: "1", Role: domain.Employee},
 			},
 		},
 	}
@@ -81,10 +81,10 @@ func Test_authctx_UserClaimsFromCtx(t *testing.T) {
 			args: args{
 				ctx: nil,
 			},
-			want:   &UserClaims{UserID: 1, Role: domain.Employee},
+			want:   &UserClaims{UserID: "1", Role: domain.Employee},
 			wantOk: true,
 			setupFn: func() context.Context {
-				return WithUserClaims(context.Background(), &UserClaims{UserID: 1, Role: domain.Employee})
+				return WithUserClaims(context.Background(), &UserClaims{UserID: "1", Role: domain.Employee})
 			},
 		},
 		{

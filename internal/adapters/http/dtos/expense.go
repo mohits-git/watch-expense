@@ -14,6 +14,7 @@ type Expense struct {
 	ReviewedBy   string               `json:"reviewedBy"`
 	ReviewedAt   int64                `json:"reviewedAt"`
 	IsReconciled bool                 `json:"isReconciled"`
+	AdvanceID    string               `json:"advanceId,omitempty"`
 	Bills        []Bill               `json:"bills"`
 	CreatedAt    int64                `json:"createdAt"`
 	UpdatedAt    int64                `json:"updatedAt"`

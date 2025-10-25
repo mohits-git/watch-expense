@@ -34,7 +34,6 @@ CREATE TABLE IF NOT EXISTS projects (
 CREATE TABLE IF NOT EXISTS expenses (
     id VARCHAR(36) PRIMARY KEY,
     user_id VARCHAR(36) NOT NULL,
-    project_id VARCHAR(36),
     amount DECIMAL(15, 2) NOT NULL,
     description TEXT,
     status VARCHAR(31) NOT NULL,
@@ -43,6 +42,7 @@ CREATE TABLE IF NOT EXISTS expenses (
     approved_at TIMESTAMP,
     reviewed_by VARCHAR(36),
     reviewed_at TIMESTAMP,
+    is_reconciled BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id)
@@ -84,7 +84,6 @@ ALTER TABLE projects
 ADD FOREIGN KEY (department_id) REFERENCES departments(id);
 
 ALTER TABLE expenses
-ADD FOREIGN KEY (project_id) REFERENCES projects(id),
 ADD FOREIGN KEY (approved_by) REFERENCES users(id),
 ADD FOREIGN KEY (reviewed_by) REFERENCES users(id);
 

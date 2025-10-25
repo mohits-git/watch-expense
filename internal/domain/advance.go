@@ -15,3 +15,10 @@ type Advance struct {
 	CreatedAt           int64         `json:"createdAt"`
 	UpdatedAt           int64         `json:"updatedAt"`
 }
+
+type AdvancesFilterOptions struct {
+	UserID string
+	Status RequestStatus
+	Page   int
+	Limit  int
+}
