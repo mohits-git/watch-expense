@@ -15,6 +15,10 @@ func main() {
 	// Load configuration
 	cfg := LoadConfig()
 
+	// Setup database
+	db := SetupDB(ctx, cfg.MYSQL_DSN)
+	defer db.Close()
+
 	// handlers
 	commonHandler := handlers.NewCommonHandler()
 

@@ -1340,7 +1340,7 @@ components:
           type: string
         reviewedAt:
           type: string
-        isReconcilled:
+        isReconciled:
           type: boolean
         bills:
           type: array
@@ -1374,7 +1374,7 @@ components:
           enum: [PENDING, REVIEWED, APPROVED, REJECTED]
         purpose:
           type: string
-        reconcilledExpenseId:
+        reconciledExpenseId:
           type: string
         approvedBy:
           type: string

@@ -9,7 +9,7 @@ type Advance struct {
 	Purpose              string
 	Description          string
 	Status               domain.RequestStatus
-	ReconcilledExpenseID string
+	ReconciledExpenseID string
 	ApprovedBy           string
 	ApprovedAt           int64
 	ReviewedBy           string

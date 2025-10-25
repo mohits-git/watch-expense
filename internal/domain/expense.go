@@ -10,20 +10,20 @@ const (
 )
 
 type Expense struct {
-	ID            string
-	UserID        string
-	Amount        float64
-	Description   string
-	Status        RequestStatus
-	Purpose       string
-	ApprovedBy    string
-	ApprovedAt    int64
-	ReviewedBy    string
-	ReviewedAt    int64
-	IsReconcilled bool
-	Bills         []Bill
-	CreatedAt     int64
-	UpdatedAt     int64
+	ID           string
+	UserID       string
+	Amount       float64
+	Description  string
+	Status       RequestStatus
+	Purpose      string
+	ApprovedBy   string
+	ApprovedAt   int64
+	ReviewedBy   string
+	ReviewedAt   int64
+	IsReconciled bool
+	Bills        []Bill
+	CreatedAt    int64
+	UpdatedAt    int64
 }
 
 type Bill struct {

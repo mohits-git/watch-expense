@@ -24,7 +24,7 @@ func LoadConfig() Config {
 
 	config.MYSQL_DSN = os.Getenv("MYSQL_DSN")
 	if config.MYSQL_DSN == "" {
-		config.MYSQL_DSN = "root:password@tcp(localhost:3306)/watchexpense"
+		config.MYSQL_DSN = "root:mysecretpassword@tcp(localhost:3306)/watchexpense"
 	}
 
 	config.JWT_SECRET = os.Getenv("JWT_SECRET")

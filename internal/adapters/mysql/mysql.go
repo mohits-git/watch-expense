@@ -22,11 +22,6 @@ func Connect(ctx context.Context, dsn string) (*sql.DB, error) {
 		if err != nil {
 			panic(err)
 		}
-		db.SetMaxOpenConns(1)
-		_, err = db.ExecContext(ctx, "PRAGMA foreign_keys = ON;")
-		if err != nil {
-			panic(err)
-		}
 	})
 
 	if err := db.PingContext(ctx); err != nil {
