@@ -41,7 +41,7 @@ func main() {
 
 	// services
 	authService := services.NewAuthenticationService(userRepo, tokenProvider, bcryptProvidder)
-	userService := services.NewUserService(userRepo)
+	userService := services.NewUserService(userRepo, projectRepo)
 	departmentService := services.NewDepartmentService(departmentRepo)
 	projectService := services.NewProjectService(projectRepo)
 	expenseService := services.NewExpenseService(expenseRepo)

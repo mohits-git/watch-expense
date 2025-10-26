@@ -34,3 +34,13 @@ func (u *UserService) GetAllUsers(ctx context.Context) ([]domain.User, error) {
 	args := u.Called(ctx)
 	return args.Get(0).([]domain.User), args.Error(1)
 }
+
+func (u *UserService) DeleteUser(ctx context.Context, userID string) error {
+	args := u.Called(ctx, userID)
+	return args.Error(0)
+}
+
+func (u *UserService) GetUserBudget(ctx context.Context) (float64, error) {
+	args := u.Called(ctx)
+	return args.Get(0).(float64), args.Error(1)
+}

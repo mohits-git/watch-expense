@@ -16,16 +16,19 @@ type UserService interface {
 	UpdateUser(ctx context.Context, user domain.User) error
 	GetUserByID(ctx context.Context, userID string) (domain.User, error)
 	GetAllUsers(ctx context.Context) ([]domain.User, error)
-  DeleteUser(ctx context.Context, userID string) error
+	DeleteUser(ctx context.Context, userID string) error
+	GetUserBudget(ctx context.Context) (float64, error)
 }
 
 type userService struct {
-	userRepo ports.UserRepository
+	userRepo    ports.UserRepository
+	projectRepo ports.ProjectRepository
 }
 
-func NewUserService(userRepo ports.UserRepository) UserService {
+func NewUserService(userRepo ports.UserRepository, projectRepo ports.ProjectRepository) UserService {
 	return &userService{
-		userRepo: userRepo,
+		userRepo:    userRepo,
+		projectRepo: projectRepo,
 	}
 }
 
@@ -75,15 +78,41 @@ func (s *userService) GetAllUsers(ctx context.Context) ([]domain.User, error) {
 }
 
 func (s *userService) DeleteUser(ctx context.Context, userID string) error {
-  claims, ok := authctx.UserClaimsFromCtx(ctx)
-  if !ok || claims.Role != domain.Admin {
-    return apperr.NewAppError(apperr.ErrUnauthorized, "only admin can delete users", nil)
-  }
-  if claims.UserID == userID {
-    return apperr.NewAppError(apperr.ErrForbidden, "admin cannot delete self", nil)
-  }
-  if !validator.ValidateUUID(userID) {
-    return apperr.NewAppError(apperr.ErrInvalid, "invalid user ID", nil)
-  }
-  return s.userRepo.DeleteUser(ctx, userID)
+	claims, ok := authctx.UserClaimsFromCtx(ctx)
+	if !ok || claims.Role != domain.Admin {
+		return apperr.NewAppError(apperr.ErrUnauthorized, "only admin can delete users", nil)
+	}
+	if claims.UserID == userID {
+		return apperr.NewAppError(apperr.ErrForbidden, "admin cannot delete self", nil)
+	}
+	if !validator.ValidateUUID(userID) {
+		return apperr.NewAppError(apperr.ErrInvalid, "invalid user ID", nil)
+	}
+	return s.userRepo.DeleteUser(ctx, userID)
+}
+
+func (s *userService) GetUserBudget(ctx context.Context) (float64, error) {
+	claims, ok := authctx.UserClaimsFromCtx(ctx)
+	if !ok {
+		return 0, apperr.NewAppError(apperr.ErrUnauthorized, "unauthorized", nil)
+	}
+
+	user, err := s.userRepo.FindUserById(ctx, claims.UserID)
+	if err != nil {
+		return 0, err
+	}
+
+	if user.ProjectID == "" {
+		return 0, nil
+	}
+
+	project, err := s.projectRepo.FindProjectById(ctx, user.ProjectID)
+	if err != nil {
+		if apperr.IsNotFoundError(err) {
+			return 0, nil
+		}
+		return 0, err
+	}
+
+	return project.Budget, nil
 }
