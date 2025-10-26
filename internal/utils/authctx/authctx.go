@@ -13,12 +13,16 @@ const userKey userKeyType = "user"
 type UserClaims struct {
 	UserID string
 	Role   domain.UserRole
+	Name   string
+	Email  string
 }
 
-func NewUserClaims(userID string, role domain.UserRole) UserClaims {
+func NewUserClaims(userID, name, email string, role domain.UserRole) UserClaims {
 	return UserClaims{
 		UserID: userID,
 		Role:   role,
+		Name:   name,
+		Email:  email,
 	}
 }
 

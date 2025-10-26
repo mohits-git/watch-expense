@@ -30,7 +30,10 @@ func (s *JWTService) GenerateToken(claims authctx.UserClaims) (string, error) {
 		"exp":     time.Now().Add(time.Hour * 24).Unix(),
 		"iat":     time.Now().Unix(),
 		"user_id": claims.UserID,
+		"sub":     claims.UserID,
 		"role":    claims.Role,
+		"name":    claims.Name,
+		"email":   claims.Email,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwtClaims)

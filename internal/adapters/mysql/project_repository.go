@@ -3,6 +3,7 @@ package mysql
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"github.com/mohits-git/watch-expense/internal/domain"
 	"github.com/mohits-git/watch-expense/internal/ports"
@@ -25,8 +26,8 @@ func (r *ProjectRepository) SaveProject(ctx context.Context, project domain.Proj
 		project.Name,
 		project.Description,
 		project.Budget,
-		nullInt64(project.StartDate),
-		nullInt64(project.EndDate),
+		time.UnixMilli(project.StartDate),
+		time.UnixMilli(project.EndDate),
 		nullString(project.DepartmentID))
 
 	if err != nil {
@@ -45,8 +46,8 @@ func (r *ProjectRepository) UpdateProject(ctx context.Context, project domain.Pr
 		project.Name,
 		project.Description,
 		project.Budget,
-		nullInt64(project.StartDate),
-		nullInt64(project.EndDate),
+		time.UnixMilli(project.StartDate),
+		time.UnixMilli(project.EndDate),
 		nullString(project.DepartmentID),
 		project.ID)
 

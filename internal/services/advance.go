@@ -113,7 +113,7 @@ func (s *advanceService) UpdateAdvanceStatus(ctx context.Context, advanceID stri
 		return apperr.NewAppError(apperr.ErrInvalid, "invalid advance ID", nil)
 	}
 
-	if !validator.ValidateExpenseStatus(status) {
+	if !validator.ValidateAdvanceStatus(status) {
 		return apperr.NewAppError(apperr.ErrInvalid, "invalid status", nil)
 	}
 
@@ -169,18 +169,8 @@ func (s *advanceService) GetAllAdvances(ctx context.Context, filterOptions domai
 		return nil, 0, apperr.NewAppError(apperr.ErrUnauthorized, "unauthorized", nil)
 	}
 
-	if filterOptions.UserID != "" {
-		if !validator.ValidateUUID(filterOptions.UserID) {
-			return nil, 0, apperr.NewAppError(apperr.ErrInvalid, "invalid user ID in filter", nil)
-		}
-		if claims.Role != domain.Admin && filterOptions.UserID != claims.UserID {
-			return nil, 0, apperr.NewAppError(apperr.ErrForbidden, "you can only view your own advances", nil)
-		}
-	} else {
-		if claims.Role != domain.Admin {
-			return nil, 0, apperr.NewAppError(apperr.ErrForbidden, "only admin can view all advances", nil)
-		}
+	if claims.Role != domain.Admin {
+		filterOptions.UserID = claims.UserID
 	}
-
 	return s.advanceRepo.FindAllAdvances(ctx, filterOptions)
 }

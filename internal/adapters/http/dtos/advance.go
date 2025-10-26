@@ -44,45 +44,52 @@ type GetAdvancesResponse struct {
 }
 
 func ToAdvanceDTO(a domain.Advance) Advance {
-  return Advance{
-    ID:                  a.ID,
-    UserID:              a.UserID,
-    Amount:              a.Amount,
-    Purpose:             a.Purpose,
-    Description:         a.Description,
-    Status:              a.Status,
-    ReconciledExpenseID: a.ReconciledExpenseID,
-    ApprovedBy:          a.ApprovedBy,
-    ApprovedAt:          a.ApprovedAt,
-    ReviewedBy:          a.ReviewedBy,
-    ReviewedAt:          a.ReviewedAt,
-    CreatedAt:           a.CreatedAt,
-    UpdatedAt:           a.UpdatedAt,
-  }
+	return Advance{
+		ID:                  a.ID,
+		UserID:              a.UserID,
+		Amount:              a.Amount,
+		Purpose:             a.Purpose,
+		Description:         a.Description,
+		Status:              a.Status,
+		ReconciledExpenseID: a.ReconciledExpenseID,
+		ApprovedBy:          a.ApprovedBy,
+		ApprovedAt:          a.ApprovedAt,
+		ReviewedBy:          a.ReviewedBy,
+		ReviewedAt:          a.ReviewedAt,
+		CreatedAt:           a.CreatedAt,
+		UpdatedAt:           a.UpdatedAt,
+	}
 }
 
 func ToAdvanceDomain(dto Advance) domain.Advance {
-  return domain.Advance{
-    ID:                  dto.ID,
-    UserID:              dto.UserID,
-    Amount:              dto.Amount,
-    Purpose:             dto.Purpose,
-    Description:         dto.Description,
-    Status:              dto.Status,
-    ReconciledExpenseID: dto.ReconciledExpenseID,
-    ApprovedBy:          dto.ApprovedBy,
-    ApprovedAt:          dto.ApprovedAt,
-    ReviewedBy:          dto.ReviewedBy,
-    ReviewedAt:          dto.ReviewedAt,
-    CreatedAt:           dto.CreatedAt,
-    UpdatedAt:           dto.UpdatedAt,
-  }
+	return domain.Advance{
+		ID:                  dto.ID,
+		UserID:              dto.UserID,
+		Amount:              dto.Amount,
+		Purpose:             dto.Purpose,
+		Description:         dto.Description,
+		Status:              dto.Status,
+		ReconciledExpenseID: dto.ReconciledExpenseID,
+		ApprovedBy:          dto.ApprovedBy,
+		ApprovedAt:          dto.ApprovedAt,
+		ReviewedBy:          dto.ReviewedBy,
+		ReviewedAt:          dto.ReviewedAt,
+		CreatedAt:           dto.CreatedAt,
+		UpdatedAt:           dto.UpdatedAt,
+	}
 }
 
 func ToAdvancesDTOs(domains []domain.Advance) []Advance {
-  advances := make([]Advance, len(domains))
-  for i, domainAdvance := range domains {
-    advances[i] = ToAdvanceDTO(domainAdvance)
-  }
-  return advances
+	advances := make([]Advance, len(domains))
+	for i, domainAdvance := range domains {
+		advances[i] = ToAdvanceDTO(domainAdvance)
+	}
+	return advances
+}
+
+type AdvanceSummary struct {
+	Approved   float64 `json:"approved"`
+	Reconciled float64 `json:"reconciled"`
+	Pending    float64 `json:"pendingReconciliation"`
+	Rejected   float64 `json:"rejectedAdvance"`
 }

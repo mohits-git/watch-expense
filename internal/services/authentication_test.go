@@ -36,7 +36,7 @@ func Test_services_AuthenticationService_Login(t *testing.T) {
 	userRole := "customer"
 	expectedToken := "valid.jwt.token"
 	user := domain.User{ID: userID, Email: email, Password: hashedPassword, Role: domain.UserRole(userRole)}
-	userClaims := authctx.NewUserClaims(userID, domain.UserRole(userRole))
+	userClaims := authctx.NewUserClaims(userID, user.Name, email, domain.UserRole(userRole))
 	// Mocking the user repository to return a user
 	mockUserRepo.On("FindUserByEmail", mock.Anything, email).
 		Return(user, nil)

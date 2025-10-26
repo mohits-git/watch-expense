@@ -30,7 +30,7 @@ func (h *ProjectHandler) HandleGetAllProjects(w http.ResponseWriter, r *http.Req
 	for _, project := range projects {
 		projectResponse = append(projectResponse, dtos.ToProjectDTO(project))
 	}
-	writeResponse(w, http.StatusOK, "projects fetched successfully", projects)
+	writeResponse(w, http.StatusOK, "projects fetched successfully", projectResponse)
 }
 
 func (h *ProjectHandler) HandleGetProjectByID(w http.ResponseWriter, r *http.Request) {
@@ -86,38 +86,38 @@ func (h *ProjectHandler) HandleCreateProject(w http.ResponseWriter, r *http.Requ
 }
 
 func (h *ProjectHandler) HandleUpdateProject(w http.ResponseWriter, r *http.Request) {
-  updateProjectRequest, err := decodeRequest[dtos.UpdateProjectRequest](r)
-  if err != nil {
-    writeError(w, http.StatusBadRequest, "invalid request")
-    return
-  }
+	updateProjectRequest, err := decodeRequest[dtos.UpdateProjectRequest](r)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request")
+		return
+	}
 
-  projectID := r.PathValue("id")
-  projectDomain := dtos.ToProjectDomain(dtos.Project{
-    ID:           projectID,
-    Name:         updateProjectRequest.Name,
-    Description:  updateProjectRequest.Description,
-    Budget:       updateProjectRequest.Budget,
-    StartDate:    updateProjectRequest.StartDate,
-    EndDate:      updateProjectRequest.EndDate,
-    DepartmentID: updateProjectRequest.DepartmentID,
-  })
+	projectID := r.PathValue("id")
+	projectDomain := dtos.ToProjectDomain(dtos.Project{
+		ID:           projectID,
+		Name:         updateProjectRequest.Name,
+		Description:  updateProjectRequest.Description,
+		Budget:       updateProjectRequest.Budget,
+		StartDate:    updateProjectRequest.StartDate,
+		EndDate:      updateProjectRequest.EndDate,
+		DepartmentID: updateProjectRequest.DepartmentID,
+	})
 
-  err = h.projectService.UpdateProject(r.Context(), projectDomain)
-  if err != nil {
-    if apperr.IsUnauthorizedError(err) {
-      writeError(w, http.StatusUnauthorized, "unauthorized")
-    } else if apperr.IsForbiddenError(err) {
-      writeError(w, http.StatusForbidden, "forbidden")
-    } else if apperr.IsInvalidError(err) {
-      writeError(w, http.StatusBadRequest, "invalid project data")
-    } else if apperr.IsNotFoundError(err) {
-      writeError(w, http.StatusNotFound, "project not found")
-    } else {
-      writeError(w, http.StatusInternalServerError, "internal server error")
-    }
-    return
-  }
+	err = h.projectService.UpdateProject(r.Context(), projectDomain)
+	if err != nil {
+		if apperr.IsUnauthorizedError(err) {
+			writeError(w, http.StatusUnauthorized, "unauthorized")
+		} else if apperr.IsForbiddenError(err) {
+			writeError(w, http.StatusForbidden, "forbidden")
+		} else if apperr.IsInvalidError(err) {
+			writeError(w, http.StatusBadRequest, "invalid project data")
+		} else if apperr.IsNotFoundError(err) {
+			writeError(w, http.StatusNotFound, "project not found")
+		} else {
+			writeError(w, http.StatusInternalServerError, "internal server error")
+		}
+		return
+	}
 
-  writeResponse(w, http.StatusOK, "project updated successfully", struct{}{})
+	writeResponse(w, http.StatusOK, "project updated successfully", struct{}{})
 }

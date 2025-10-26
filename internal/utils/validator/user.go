@@ -4,7 +4,7 @@ import "github.com/mohits-git/watch-expense/internal/domain"
 
 func ValidateUserCreation(user domain.User) bool {
 	if !ValidateEmail(user.Email) ||
-		!ValidatePassword(user.Password) ||
+  // !ValidatePassword(user.Password) || // TODO:
 		!ValidateUserRole(user.Role) ||
 		user.Name == "" {
 		return false

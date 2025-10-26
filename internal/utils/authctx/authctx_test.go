@@ -11,6 +11,8 @@ func Test_authctx_NewUserClaims(t *testing.T) {
 	type args struct {
 		userID string
 		role   domain.UserRole
+		name   string
+		email  string
 	}
 	tests := []struct {
 		name string
@@ -22,16 +24,20 @@ func Test_authctx_NewUserClaims(t *testing.T) {
 			args: args{
 				userID: "1",
 				role:   domain.Employee,
+				name:   "John Doe",
+				email:  "test@example.com",
 			},
 			want: UserClaims{
 				UserID: "1",
 				Role:   domain.Employee,
+				Name:   "John Doe",
+				Email:  "test@example.com",
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewUserClaims(tt.args.userID, tt.args.role); got != tt.want {
+			if got := NewUserClaims(tt.args.userID, tt.args.name, tt.args.email, tt.args.role); got != tt.want {
 				t.Errorf("NewUserClaims() = %v, want %v", got, tt.want)
 			}
 		})

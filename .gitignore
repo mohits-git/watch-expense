@@ -2,3 +2,4 @@ watch-expense
 .env
 docs/swagger/
 bin/
+public/images/

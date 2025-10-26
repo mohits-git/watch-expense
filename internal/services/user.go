@@ -16,6 +16,7 @@ type UserService interface {
 	UpdateUser(ctx context.Context, user domain.User) error
 	GetUserByID(ctx context.Context, userID string) (domain.User, error)
 	GetAllUsers(ctx context.Context) ([]domain.User, error)
+  DeleteUser(ctx context.Context, userID string) error
 }
 
 type userService struct {
@@ -71,4 +72,18 @@ func (s *userService) GetAllUsers(ctx context.Context) ([]domain.User, error) {
 		return nil, apperr.NewAppError(apperr.ErrUnauthorized, "only admin can access all users", nil)
 	}
 	return s.userRepo.FindAllUsers(ctx)
+}
+
+func (s *userService) DeleteUser(ctx context.Context, userID string) error {
+  claims, ok := authctx.UserClaimsFromCtx(ctx)
+  if !ok || claims.Role != domain.Admin {
+    return apperr.NewAppError(apperr.ErrUnauthorized, "only admin can delete users", nil)
+  }
+  if claims.UserID == userID {
+    return apperr.NewAppError(apperr.ErrForbidden, "admin cannot delete self", nil)
+  }
+  if !validator.ValidateUUID(userID) {
+    return apperr.NewAppError(apperr.ErrInvalid, "invalid user ID", nil)
+  }
+  return s.userRepo.DeleteUser(ctx, userID)
 }

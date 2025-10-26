@@ -76,5 +76,22 @@ func main() {
 
 	// Start the HTTP server
 	log.Println("Starting server on :8080")
-	log.Fatal(http.ListenAndServe(":8080", httpRouter))
+	log.Fatal(http.ListenAndServe(":8080", enableCors(httpRouter)))
+}
+
+// http.Handler wrapper that adds CORS headers to responses.
+func enableCors(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*") // Allow all origins, or specify a list
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		w.Header().Set("Access-Control-Allow-Credentials", "true") // If you need to send cookies/auth headers
+
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
 }

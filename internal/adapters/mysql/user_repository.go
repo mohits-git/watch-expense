@@ -175,3 +175,23 @@ func (r *UserRepository) FindAllUsers(ctx context.Context) ([]domain.User, error
 
 	return users, nil
 }
+
+func (r *UserRepository) DeleteUser(ctx context.Context, userID string) error {
+  query := `DELETE FROM users WHERE id = ?`
+
+  result, err := r.db.ExecContext(ctx, query, userID)
+  if err != nil {
+    return HandleMysqlError(err)
+  }
+
+  rowsAffected, err := result.RowsAffected()
+  if err != nil {
+    return HandleMysqlError(err)
+  }
+
+  if rowsAffected == 0 {
+    return HandleMysqlError(sql.ErrNoRows)
+  }
+
+  return nil
+}

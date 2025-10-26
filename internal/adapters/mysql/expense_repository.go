@@ -3,6 +3,7 @@ package mysql
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"github.com/mohits-git/watch-expense/internal/domain"
 	"github.com/mohits-git/watch-expense/internal/ports"
@@ -20,6 +21,14 @@ func (r *ExpenseRepository) SaveExpense(ctx context.Context, expense domain.Expe
 	query := `INSERT INTO expenses (id, user_id, amount, description, status, purpose, approved_by, approved_at, reviewed_by, reviewed_at, is_reconciled) 
 			  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
+	var approvedAt sql.NullTime
+	if expense.ApprovedAt != 0 {
+		approvedAt = sql.NullTime{Time: time.UnixMilli(expense.ApprovedAt), Valid: true}
+	}
+	var reviewedAt sql.NullTime
+	if expense.ReviewedAt != 0 {
+		reviewedAt = sql.NullTime{Time: time.UnixMilli(expense.ReviewedAt), Valid: true}
+	}
 	_, err := r.db.ExecContext(ctx, query,
 		expense.ID,
 		expense.UserID,
@@ -28,10 +37,24 @@ func (r *ExpenseRepository) SaveExpense(ctx context.Context, expense domain.Expe
 		expense.Status,
 		expense.Purpose,
 		nullString(expense.ApprovedBy),
-		nullInt64(expense.ApprovedAt),
+		approvedAt,
 		nullString(expense.ReviewedBy),
-		nullInt64(expense.ReviewedAt),
+		reviewedAt,
 		expense.IsReconciled)
+
+	for _, bill := range expense.Bills {
+		billQuery := `INSERT INTO bills (id, expense_id, amount, description, attachment_url)
+    VALUES (?, ?, ?, ?, ?)`
+		_, err := r.db.ExecContext(ctx, billQuery,
+			bill.ID,
+			expense.ID,
+			bill.Amount,
+			bill.Description,
+			bill.AttachmentURL)
+		if err != nil {
+			return "", HandleMysqlError(err)
+		}
+	}
 
 	if err != nil {
 		return "", HandleMysqlError(err)
@@ -46,6 +69,14 @@ func (r *ExpenseRepository) UpdateExpense(ctx context.Context, expense domain.Ex
 			      approved_by = ?, approved_at = ?, reviewed_by = ?, reviewed_at = ?, is_reconciled = ?
 			  WHERE id = ?`
 
+	var approvedAt sql.NullTime
+	if expense.ApprovedAt != 0 {
+		approvedAt = sql.NullTime{Time: time.UnixMilli(expense.ApprovedAt), Valid: true}
+	}
+	var reviewedAt sql.NullTime
+	if expense.ReviewedAt != 0 {
+		reviewedAt = sql.NullTime{Time: time.UnixMilli(expense.ReviewedAt), Valid: true}
+	}
 	result, err := r.db.ExecContext(ctx, query,
 		expense.UserID,
 		expense.Amount,
@@ -53,9 +84,9 @@ func (r *ExpenseRepository) UpdateExpense(ctx context.Context, expense domain.Ex
 		expense.Status,
 		expense.Purpose,
 		nullString(expense.ApprovedBy),
-		nullInt64(expense.ApprovedAt),
+		approvedAt,
 		nullString(expense.ReviewedBy),
-		nullInt64(expense.ReviewedAt),
+		reviewedAt,
 		expense.IsReconciled,
 		expense.ID)
 

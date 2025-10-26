@@ -144,3 +144,10 @@ func ToCreateExpenseDomain(dto CreateExpenseRequest) domain.Expense {
 		Bills:        bills,
 	}
 }
+
+type ExpenseSummary struct {
+	TotalExpenses     int `json:"totalExpense"`
+	PendingExpense    int `json:"pendingExpense"`
+	ReimbursedExpense int `json:"reimbursedExpense"`
+	RejectedExpense   int `json:"rejectedExpense"`
+}

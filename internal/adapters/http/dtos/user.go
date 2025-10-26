@@ -56,11 +56,15 @@ type CreateUserResponse struct {
 }
 
 type UpdateUserRequest struct {
-  EmployeeId   string          `json:"employeeId"`
-  Name         string          `json:"name"`
-  Password     string          `json:"password"`
-  Email        string          `json:"email"`
-  Role         domain.UserRole `json:"role"`
-  ProjectID    string          `json:"projectId"`
-  DepartmentID string          `json:"departmentId"`
+	EmployeeId   string          `json:"employeeId"`
+	Name         string          `json:"name"`
+	Password     string          `json:"password"`
+	Email        string          `json:"email"`
+	Role         domain.UserRole `json:"role"`
+	ProjectID    string          `json:"projectId"`
+	DepartmentID string          `json:"departmentId"`
+}
+
+type GetUserBudgetResponse struct {
+	Budget float64 `json:"budget"`
 }

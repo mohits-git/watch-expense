@@ -128,28 +128,28 @@ func (h *AdvanceHandler) HandleUpdateAdvance(w http.ResponseWriter, r *http.Requ
 }
 
 func (h *AdvanceHandler) HandleUpdateAdvanceStatus(w http.ResponseWriter, r *http.Request) {
-  updateAdvanceStatusRequest, err := decodeRequest[dtos.UpdateAdvanceStatusRequest](r)
-  if err != nil {
-    writeError(w, http.StatusBadRequest, "invalid request")
-    return
-  }
-  advanceID := r.URL.Query().Get("id")
-  err = h.advanceService.UpdateAdvanceStatus(r.Context(), advanceID, updateAdvanceStatusRequest.Status)
-  if err != nil {
-    if apperr.IsUnauthorizedError(err) {
-      writeError(w, http.StatusUnauthorized, "unauthorized")
-    } else if apperr.IsForbiddenError(err) {
-      writeError(w, http.StatusForbidden, "forbidden")
-    } else if apperr.IsNotFoundError(err) {
-      writeError(w, http.StatusNotFound, "advance not found")
-    } else if apperr.IsInvalidError(err) {
-      writeError(w, http.StatusBadRequest, "invalid status")
-    } else {
-      writeError(w, http.StatusInternalServerError, "internal server error")
-    }
-    return
-  }
-  writeResponse(w, http.StatusOK, "advance status updated successfully", struct{}{})
+	updateAdvanceStatusRequest, err := decodeRequest[dtos.UpdateAdvanceStatusRequest](r)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request")
+		return
+	}
+	advanceID := r.PathValue("id")
+	err = h.advanceService.UpdateAdvanceStatus(r.Context(), advanceID, updateAdvanceStatusRequest.Status)
+	if err != nil {
+		if apperr.IsUnauthorizedError(err) {
+			writeError(w, http.StatusUnauthorized, "unauthorized")
+		} else if apperr.IsForbiddenError(err) {
+			writeError(w, http.StatusForbidden, "forbidden")
+		} else if apperr.IsNotFoundError(err) {
+			writeError(w, http.StatusNotFound, "advance not found")
+		} else if apperr.IsInvalidError(err) {
+			writeError(w, http.StatusBadRequest, "invalid status")
+		} else {
+			writeError(w, http.StatusInternalServerError, "internal server error")
+		}
+		return
+	}
+	writeResponse(w, http.StatusOK, "advance status updated successfully", struct{}{})
 }
 
 func parseAdvancesFilterOptions(r *http.Request) (domain.AdvancesFilterOptions, error) {
@@ -157,6 +157,7 @@ func parseAdvancesFilterOptions(r *http.Request) (domain.AdvancesFilterOptions, 
 	status := r.URL.Query().Get("status")
 	pageStr := r.URL.Query().Get("page")
 	limitStr := r.URL.Query().Get("limit")
+	userID := r.URL.Query().Get("user_id")
 
 	page := 0
 	limit := 10
@@ -175,9 +176,42 @@ func parseAdvancesFilterOptions(r *http.Request) (domain.AdvancesFilterOptions, 
 	}
 
 	return domain.AdvancesFilterOptions{
+		UserID: userID,
 		Status: domain.RequestStatus(status),
 		Page:   page,
 		Limit:  limit,
 	}, nil
+}
 
+func (h *AdvanceHandler) HandleGetAdvanceSummary(w http.ResponseWriter, r *http.Request) {
+	writeResponse(w, http.StatusOK, "advance summary fetched successfully", dtos.AdvanceSummary{
+		Approved:   1000,
+		Pending:    200,
+		Reconciled: 100,
+		Rejected:   50,
+	})
+
+	// TODO:
+	// summary, err := h.advanceService.GetAdvanceSummary(r.Context())
+	// if err != nil {
+	//   if apperr.IsUnauthorizedError(err) {
+	//     writeError(w, http.StatusUnauthorized, "unauthorized")
+	//   } else if apperr.IsForbiddenError(err) {
+	//     writeError(w, http.StatusForbidden, "forbidden")
+	//   } else {
+	//     writeError(w, http.StatusInternalServerError, "internal server error")
+	//   }
+	//   return
+	// }
+	// response := dtos.AdvanceSummary{
+	//   TotalAdvances:       summary.TotalAdvances,
+	//   PendingAdvances:     summary.PendingAdvances,
+	//   ApprovedAdvances:    summary.ApprovedAdvances,
+	//   RejectedAdvances:    summary.RejectedAdvances,
+	//   TotalAdvanceAmount:  summary.TotalAdvanceAmount,
+	//   PendingAdvanceAmount: summary.PendingAdvanceAmount,
+	//   ApprovedAdvanceAmount: summary.ApprovedAdvanceAmount,
+	//   RejectedAdvanceAmount: summary.RejectedAdvanceAmount,
+	// }
+	// writeResponse(w, http.StatusOK, "advance summary fetched successfully", response)
 }

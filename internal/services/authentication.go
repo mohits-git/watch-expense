@@ -47,7 +47,7 @@ func (s *authenticationService) Login(ctx context.Context, email, password strin
 		return "", apperr.NewAppError(apperr.ErrUnauthorized, "invalid email or password", nil)
 	}
 
-	claims := authctx.NewUserClaims(user.ID, user.Role)
+	claims := authctx.NewUserClaims(user.ID, user.Name, user.Email, user.Role)
 	token, err = s.tokenProvider.GenerateToken(claims)
 	if err != nil {
 		return "", err

@@ -12,4 +12,5 @@ type UserRepository interface {
   FindUserById(ctx context.Context, userId string) (domain.User, error)
   FindUserByEmail(ctx context.Context, email string) (domain.User, error)
   FindAllUsers(ctx context.Context) ([]domain.User, error)
+  DeleteUser(ctx context.Context, userID string) error
 }

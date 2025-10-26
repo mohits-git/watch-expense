@@ -116,3 +116,43 @@ func (h *UserHandler) HandleUpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	writeResponse(w, http.StatusOK, "user updated successfully", struct{}{})
 }
+
+func (h *UserHandler) HandleDeleteUser(w http.ResponseWriter, r *http.Request) {
+	userID := r.PathValue("id")
+
+	err := h.userService.DeleteUser(r.Context(), userID)
+	if err != nil {
+		if apperr.IsUnauthorizedError(err) {
+			writeError(w, http.StatusUnauthorized, "only admin can delete users")
+		} else if apperr.IsInvalidError(err) {
+			writeError(w, http.StatusBadRequest, "invalid user ID")
+		} else {
+			writeError(w, http.StatusInternalServerError, "internal server error")
+		}
+		return
+	}
+
+	writeResponse(w, http.StatusOK, "user deleted successfully", struct{}{})
+}
+
+func (h *UserHandler) HandleGetUserBudget(w http.ResponseWriter, r *http.Request) {
+	writeResponse(w, http.StatusOK, "success", dtos.GetUserBudgetResponse{
+		Budget: 289,
+	})
+	// TODO:
+	// userID := r.URL.Query().Get("userId")
+	// budget, err := h.userService.GetUserBudget(r.Context(), userID)
+	// if err != nil {
+	//   if apperr.IsUnauthorizedError(err) {
+	//     writeError(w, http.StatusUnauthorized, "unauthorized")
+	//   } else if apperr.IsNotFoundError(err) {
+	//     writeError(w, http.StatusNotFound, "user not found")
+	//   } else if apperr.IsInvalidError(err) {
+	//     writeError(w, http.StatusBadRequest, "invalid user ID")
+	//   } else {
+	//     writeError(w, http.StatusInternalServerError, "internal server error")
+	//   }
+	//   return
+	// }
+	// writeResponse(w, http.StatusOK, "user budget fetched successfully", dtos.GetUserBudgetResponse{Budget: budget})
+}

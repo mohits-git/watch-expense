@@ -76,79 +76,79 @@ func (h *ExpenseHandler) HandleGetExpenses(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *ExpenseHandler) HandleUpdateExpense(w http.ResponseWriter, r *http.Request) {
-  updateExpenseRequest, err := decodeRequest[dtos.UpdateExpenseRequest](r)
-  if err != nil {
-    writeError(w, http.StatusBadRequest, "invalid request")
-    return
-  }
-  expenseID := r.PathValue("id")
-  expense := domain.Expense{
-    ID:           expenseID,
-    Amount:       updateExpenseRequest.Amount,
-    Description:  updateExpenseRequest.Description,
-    Purpose:      updateExpenseRequest.Purpose,
-    IsReconciled: updateExpenseRequest.IsReconciled,
-  }
-  err = h.expenseService.UpdateExpense(r.Context(), expense)
-  if err != nil {
-    if apperr.IsUnauthorizedError(err) {
-      writeError(w, http.StatusUnauthorized, "unauthorized")
-    } else if apperr.IsForbiddenError(err) {
-      writeError(w, http.StatusForbidden, "forbidden")
-    } else if apperr.IsNotFoundError(err) {
-      writeError(w, http.StatusNotFound, "expense not found")
-    } else if apperr.IsInvalidError(err) {
-      writeError(w, http.StatusBadRequest, "invalid expense data")
-    } else {
-      writeError(w, http.StatusInternalServerError, "internal server error")
-    }
-    return
-  }
-  writeResponse(w, http.StatusOK, "expense updated successfully", struct{}{})
+	updateExpenseRequest, err := decodeRequest[dtos.UpdateExpenseRequest](r)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request")
+		return
+	}
+	expenseID := r.PathValue("id")
+	expense := domain.Expense{
+		ID:           expenseID,
+		Amount:       updateExpenseRequest.Amount,
+		Description:  updateExpenseRequest.Description,
+		Purpose:      updateExpenseRequest.Purpose,
+		IsReconciled: updateExpenseRequest.IsReconciled,
+	}
+	err = h.expenseService.UpdateExpense(r.Context(), expense)
+	if err != nil {
+		if apperr.IsUnauthorizedError(err) {
+			writeError(w, http.StatusUnauthorized, "unauthorized")
+		} else if apperr.IsForbiddenError(err) {
+			writeError(w, http.StatusForbidden, "forbidden")
+		} else if apperr.IsNotFoundError(err) {
+			writeError(w, http.StatusNotFound, "expense not found")
+		} else if apperr.IsInvalidError(err) {
+			writeError(w, http.StatusBadRequest, "invalid expense data")
+		} else {
+			writeError(w, http.StatusInternalServerError, "internal server error")
+		}
+		return
+	}
+	writeResponse(w, http.StatusOK, "expense updated successfully", struct{}{})
 }
 
 func (h *ExpenseHandler) HandleUpdateExpenseStatus(w http.ResponseWriter, r *http.Request) {
-  updateExpenseStatusRequest, err := decodeRequest[dtos.UpdateExpenseStatusRequest](r)
-  if err != nil {
-    writeError(w, http.StatusBadRequest, "invalid request")
-    return
-  }
-  expenseID := r.PathValue("id")
-  err = h.expenseService.UpdateExpenseStatus(r.Context(), expenseID, updateExpenseStatusRequest.Status)
-  if err != nil {
-    if apperr.IsUnauthorizedError(err) {
-      writeError(w, http.StatusUnauthorized, "unauthorized")
-    } else if apperr.IsForbiddenError(err) {
-      writeError(w, http.StatusForbidden, "forbidden")
-    } else if apperr.IsNotFoundError(err) {
-      writeError(w, http.StatusNotFound, "expense not found")
-    } else if apperr.IsInvalidError(err) {
-      writeError(w, http.StatusBadRequest, "invalid status")
-    } else {
-      writeError(w, http.StatusInternalServerError, "internal server error")
-    }
-    return
-  }
-  writeResponse(w, http.StatusOK, "expense status updated successfully", struct{}{})
+	updateExpenseStatusRequest, err := decodeRequest[dtos.UpdateExpenseStatusRequest](r)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request")
+		return
+	}
+	expenseID := r.PathValue("id")
+	err = h.expenseService.UpdateExpenseStatus(r.Context(), expenseID, updateExpenseStatusRequest.Status)
+	if err != nil {
+		if apperr.IsUnauthorizedError(err) {
+			writeError(w, http.StatusUnauthorized, "unauthorized")
+		} else if apperr.IsForbiddenError(err) {
+			writeError(w, http.StatusForbidden, "forbidden")
+		} else if apperr.IsNotFoundError(err) {
+			writeError(w, http.StatusNotFound, "expense not found")
+		} else if apperr.IsInvalidError(err) {
+			writeError(w, http.StatusBadRequest, "invalid status")
+		} else {
+			writeError(w, http.StatusInternalServerError, "internal server error")
+		}
+		return
+	}
+	writeResponse(w, http.StatusOK, "expense status updated successfully", struct{}{})
 }
 
 func (h *ExpenseHandler) HandleGetExpenseByID(w http.ResponseWriter, r *http.Request) {
-  expenseID := r.PathValue("id")
-  expense, err := h.expenseService.GetExpenseByID(r.Context(), expenseID)
-  if err != nil {
-    if apperr.IsUnauthorizedError(err) {
-      writeError(w, http.StatusUnauthorized, "unauthorized")
-    } else if apperr.IsNotFoundError(err) {
-      writeError(w, http.StatusNotFound, "expense not found")
-    } else if apperr.IsInvalidError(err) {
-      writeError(w, http.StatusBadRequest, "invalid expense ID")
-    } else {
-      writeError(w, http.StatusInternalServerError, "internal server error")
-    }
-    return
-  }
-  expenseDTO := dtos.ToExpenseDTO(expense)
-  writeResponse(w, http.StatusOK, "expense fetched successfully", expenseDTO)
+	expenseID := r.PathValue("id")
+	expense, err := h.expenseService.GetExpenseByID(r.Context(), expenseID)
+	if err != nil {
+		if apperr.IsUnauthorizedError(err) {
+			writeError(w, http.StatusUnauthorized, "unauthorized")
+		} else if apperr.IsNotFoundError(err) {
+			writeError(w, http.StatusNotFound, "expense not found")
+		} else if apperr.IsInvalidError(err) {
+			writeError(w, http.StatusBadRequest, "invalid expense ID")
+		} else {
+			writeError(w, http.StatusInternalServerError, "internal server error")
+		}
+		return
+	}
+	expenseDTO := dtos.ToExpenseDTO(expense)
+	writeResponse(w, http.StatusOK, "expense fetched successfully", expenseDTO)
 }
 
 func parseExpensesFilterOptions(r *http.Request) (domain.ExpensesFilterOptions, error) {
@@ -180,4 +180,28 @@ func parseExpensesFilterOptions(r *http.Request) (domain.ExpensesFilterOptions, 
 		Limit:  limit,
 		Status: domain.RequestStatus(status),
 	}, nil
+}
+
+func (h *ExpenseHandler) HandleGetExpenseSummary(w http.ResponseWriter, r *http.Request) {
+	writeResponse(w, http.StatusOK, "expense summary fetched successfully", dtos.ExpenseSummary{
+		TotalExpenses:     10000,
+		PendingExpense:    2500,
+		ReimbursedExpense: 7000,
+		RejectedExpense:   500,
+	})
+
+	// TODO:
+	// summary, err := h.expenseService.GetExpenseSummary(r.Context())
+	// if err != nil {
+	//   if apperr.IsUnauthorizedError(err) {
+	//     writeError(w, http.StatusUnauthorized, "unauthorized")
+	//   } else if apperr.IsForbiddenError(err) {
+	//     writeError(w, http.StatusForbidden, "forbidden")
+	//   } else {
+	//     writeError(w, http.StatusInternalServerError, "internal server error")
+	//   }
+	//   return
+	// }
+	// summaryDTO := dtos.ToExpenseSummaryDTO(summary)
+	// writeResponse(w, http.StatusOK, "expense summary fetched successfully", summaryDTO)
 }

@@ -52,6 +52,11 @@ func (s *expenseService) CreateExpense(ctx context.Context, expense domain.Expen
 	expense.CreatedAt = time.Now().Unix()
 	expense.UpdatedAt = time.Now().Unix()
 
+	for i := range expense.Bills {
+		expense.Bills[i].ID = uuid.New().String()
+		expense.Bills[i].ExpenseID = expense.ID
+	}
+
 	return s.expenseRepo.SaveExpense(ctx, expense)
 }
 

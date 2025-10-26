@@ -3,6 +3,7 @@ package mysql
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"github.com/mohits-git/watch-expense/internal/domain"
 	"github.com/mohits-git/watch-expense/internal/ports"
@@ -20,6 +21,14 @@ func (r *AdvanceRepository) SaveAdvance(ctx context.Context, advance domain.Adva
 	query := `INSERT INTO advances (id, user_id, amount, purpose, description, status, reconciled_expense_id, approved_by, approved_at, reviewed_by, reviewed_at) 
 			  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
+	var approvedAt sql.NullTime
+	if advance.ApprovedAt != 0 {
+		approvedAt = sql.NullTime{Time: time.UnixMilli(advance.ApprovedAt), Valid: true}
+	}
+	var reviewedAt sql.NullTime
+	if advance.ReviewedAt != 0 {
+		reviewedAt = sql.NullTime{Time: time.UnixMilli(advance.ReviewedAt), Valid: true}
+	}
 	_, err := r.db.ExecContext(ctx, query,
 		advance.ID,
 		advance.UserID,
@@ -29,9 +38,10 @@ func (r *AdvanceRepository) SaveAdvance(ctx context.Context, advance domain.Adva
 		advance.Status,
 		nullString(advance.ReconciledExpenseID),
 		nullString(advance.ApprovedBy),
-		nullInt64(advance.ApprovedAt),
+		approvedAt,
 		nullString(advance.ReviewedBy),
-		nullInt64(advance.ReviewedAt))
+		reviewedAt,
+	)
 
 	if err != nil {
 		return "", HandleMysqlError(err)
@@ -46,6 +56,14 @@ func (r *AdvanceRepository) UpdateAdvance(ctx context.Context, advance domain.Ad
 			      reconciled_expense_id = ?, approved_by = ?, approved_at = ?, reviewed_by = ?, reviewed_at = ?
 			  WHERE id = ?`
 
+	var approvedAt sql.NullTime
+	if advance.ApprovedAt != 0 {
+		approvedAt = sql.NullTime{Time: time.UnixMilli(advance.ApprovedAt), Valid: true}
+	}
+	var reviewedAt sql.NullTime
+	if advance.ReviewedAt != 0 {
+		reviewedAt = sql.NullTime{Time: time.UnixMilli(advance.ReviewedAt), Valid: true}
+	}
 	result, err := r.db.ExecContext(ctx, query,
 		advance.UserID,
 		advance.Amount,
@@ -54,9 +72,9 @@ func (r *AdvanceRepository) UpdateAdvance(ctx context.Context, advance domain.Ad
 		advance.Status,
 		nullString(advance.ReconciledExpenseID),
 		nullString(advance.ApprovedBy),
-		nullInt64(advance.ApprovedAt),
+    approvedAt,
 		nullString(advance.ReviewedBy),
-		nullInt64(advance.ReviewedAt),
+    reviewedAt,
 		advance.ID)
 
 	if err != nil {
