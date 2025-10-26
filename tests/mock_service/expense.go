@@ -39,3 +39,8 @@ func (e *ExpenseService) UpdateExpenseStatus(ctx context.Context, expenseID stri
 	args := e.Called(ctx, expenseID, status)
 	return args.Error(0)
 }
+
+func (e *ExpenseService) GetExpenseSummary(ctx context.Context) (domain.ExpenseSummary, error) {
+	args := e.Called(ctx)
+	return args.Get(0).(domain.ExpenseSummary), args.Error(1)
+}

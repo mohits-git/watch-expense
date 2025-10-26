@@ -41,3 +41,10 @@ type ExpensesFilterOptions struct {
 	Limit  int
 	Status RequestStatus
 }
+
+type ExpenseSummary struct {
+	TotalExpenses     float64
+	PendingExpense    float64
+	ReimbursedExpense float64
+	RejectedExpense   float64
+}

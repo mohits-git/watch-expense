@@ -320,3 +320,26 @@ func (r *ExpenseRepository) findAdvanceIdByExpenseId(ctx context.Context, expens
 
 	return advanceID.String, nil
 }
+
+func (r *ExpenseRepository) GetExpenseSumByStatus(ctx context.Context, userID string, status domain.RequestStatus) (float64, error) {
+	query := `SELECT COALESCE(SUM(amount), 0) FROM expenses WHERE 1=1`
+	args := []any{}
+
+	if userID != "" {
+		query += ` AND user_id = ?`
+		args = append(args, userID)
+	}
+
+	if status != "" {
+		query += ` AND status = ?`
+		args = append(args, status)
+	}
+
+	var sum float64
+	err := r.db.QueryRowContext(ctx, query, args...).Scan(&sum)
+	if err != nil {
+		return 0, HandleMysqlError(err)
+	}
+
+	return sum, nil
+}

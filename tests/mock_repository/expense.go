@@ -35,3 +35,8 @@ func (e *ExpenseRepository) FindAllExpenses(ctx context.Context, filterOptions d
 	args := e.Called(ctx, filterOptions)
 	return args.Get(0).([]domain.Expense), args.Int(1), args.Error(2)
 }
+
+func (e *ExpenseRepository) GetExpenseSumByStatus(ctx context.Context, userID string, status domain.RequestStatus) (float64, error) {
+	args := e.Called(ctx, userID, status)
+	return args.Get(0).(float64), args.Error(1)
+}

@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -18,6 +19,7 @@ type ExpenseService interface {
 	UpdateExpense(ctx context.Context, expense domain.Expense) error
 	GetAllExpenses(ctx context.Context, filterOptions domain.ExpensesFilterOptions) ([]domain.Expense, int, error)
 	UpdateExpenseStatus(ctx context.Context, expenseID string, status domain.RequestStatus) error
+	GetExpenseSummary(ctx context.Context) (domain.ExpenseSummary, error)
 }
 
 type expenseService struct {
@@ -179,4 +181,86 @@ func (s *expenseService) GetAllExpenses(ctx context.Context, filterOptions domai
 	}
 
 	return s.expenseRepo.FindAllExpenses(ctx, filterOptions)
+}
+
+func (s *expenseService) GetExpenseSummary(ctx context.Context) (domain.ExpenseSummary, error) {
+	claims, ok := authctx.UserClaimsFromCtx(ctx)
+	if !ok {
+		return domain.ExpenseSummary{}, apperr.NewAppError(apperr.ErrUnauthorized, "unauthorized", nil)
+	}
+
+	userID := claims.UserID
+	if claims.Role == domain.Admin {
+		userID = ""
+	}
+
+	type result struct {
+		value float64
+		err   error
+	}
+
+	totalChan := make(chan result, 1)
+	pendingChan := make(chan result, 1)
+	approvedChan := make(chan result, 1)
+	rejectedChan := make(chan result, 1)
+
+	var wg sync.WaitGroup
+	wg.Add(4)
+
+	go func() {
+		defer wg.Done()
+		sum, err := s.expenseRepo.GetExpenseSumByStatus(ctx, userID, "")
+		totalChan <- result{value: sum, err: err}
+	}()
+
+	go func() {
+		defer wg.Done()
+		sum, err := s.expenseRepo.GetExpenseSumByStatus(ctx, userID, domain.Pending)
+		pendingChan <- result{value: sum, err: err}
+	}()
+
+	go func() {
+		defer wg.Done()
+		sum, err := s.expenseRepo.GetExpenseSumByStatus(ctx, userID, domain.Approved)
+		approvedChan <- result{value: sum, err: err}
+	}()
+
+	go func() {
+		defer wg.Done()
+		sum, err := s.expenseRepo.GetExpenseSumByStatus(ctx, userID, domain.Rejected)
+		rejectedChan <- result{value: sum, err: err}
+	}()
+
+	wg.Wait()
+	close(totalChan)
+	close(pendingChan)
+	close(approvedChan)
+	close(rejectedChan)
+
+	totalResult := <-totalChan
+	if totalResult.err != nil {
+		return domain.ExpenseSummary{}, totalResult.err
+	}
+
+	pendingResult := <-pendingChan
+	if pendingResult.err != nil {
+		return domain.ExpenseSummary{}, pendingResult.err
+	}
+
+	approvedResult := <-approvedChan
+	if approvedResult.err != nil {
+		return domain.ExpenseSummary{}, approvedResult.err
+	}
+
+	rejectedResult := <-rejectedChan
+	if rejectedResult.err != nil {
+		return domain.ExpenseSummary{}, rejectedResult.err
+	}
+
+	return domain.ExpenseSummary{
+		TotalExpenses:     totalResult.value,
+		PendingExpense:    pendingResult.value,
+		ReimbursedExpense: approvedResult.value,
+		RejectedExpense:   rejectedResult.value,
+	}, nil
 }

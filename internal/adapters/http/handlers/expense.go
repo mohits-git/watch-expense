@@ -183,25 +183,17 @@ func parseExpensesFilterOptions(r *http.Request) (domain.ExpensesFilterOptions, 
 }
 
 func (h *ExpenseHandler) HandleGetExpenseSummary(w http.ResponseWriter, r *http.Request) {
-	writeResponse(w, http.StatusOK, "expense summary fetched successfully", dtos.ExpenseSummary{
-		TotalExpenses:     10000,
-		PendingExpense:    2500,
-		ReimbursedExpense: 7000,
-		RejectedExpense:   500,
-	})
-
-	// TODO:
-	// summary, err := h.expenseService.GetExpenseSummary(r.Context())
-	// if err != nil {
-	//   if apperr.IsUnauthorizedError(err) {
-	//     writeError(w, http.StatusUnauthorized, "unauthorized")
-	//   } else if apperr.IsForbiddenError(err) {
-	//     writeError(w, http.StatusForbidden, "forbidden")
-	//   } else {
-	//     writeError(w, http.StatusInternalServerError, "internal server error")
-	//   }
-	//   return
-	// }
-	// summaryDTO := dtos.ToExpenseSummaryDTO(summary)
-	// writeResponse(w, http.StatusOK, "expense summary fetched successfully", summaryDTO)
+	summary, err := h.expenseService.GetExpenseSummary(r.Context())
+	if err != nil {
+		if apperr.IsUnauthorizedError(err) {
+			writeError(w, http.StatusUnauthorized, "unauthorized")
+		} else if apperr.IsForbiddenError(err) {
+			writeError(w, http.StatusForbidden, "forbidden")
+		} else {
+			writeError(w, http.StatusInternalServerError, "internal server error")
+		}
+		return
+	}
+	summaryDTO := dtos.ToExpenseSummaryDTO(summary)
+	writeResponse(w, http.StatusOK, "expense summary fetched successfully", summaryDTO)
 }

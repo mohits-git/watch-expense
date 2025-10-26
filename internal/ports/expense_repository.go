@@ -11,4 +11,5 @@ type ExpenseRepository interface {
 	UpdateExpense(ctx context.Context, expense domain.Expense) error
 	FindExpenseById(ctx context.Context, expenseId string) (domain.Expense, error)
 	FindAllExpenses(ctx context.Context, filterOptions domain.ExpensesFilterOptions) ([]domain.Expense, int, error)
+	GetExpenseSumByStatus(ctx context.Context, userID string, status domain.RequestStatus) (float64, error)
 }

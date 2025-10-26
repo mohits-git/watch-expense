@@ -153,3 +153,12 @@ type ExpenseSummary struct {
 	ReimbursedExpense int `json:"reimbursedExpense"`
 	RejectedExpense   int `json:"rejectedExpense"`
 }
+
+func ToExpenseSummaryDTO(summary domain.ExpenseSummary) ExpenseSummary {
+	return ExpenseSummary{
+		TotalExpenses:     int(summary.TotalExpenses),
+		PendingExpense:    int(summary.PendingExpense),
+		ReimbursedExpense: int(summary.ReimbursedExpense),
+		RejectedExpense:   int(summary.RejectedExpense),
+	}
+}
