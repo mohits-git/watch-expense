@@ -16,7 +16,7 @@ type Expense struct {
 	ReviewedBy   string               `json:"reviewedBy"`
 	ReviewedAt   int64                `json:"reviewedAt"`
 	IsReconciled bool                 `json:"isReconciled"`
-	AdvanceID    string               `json:"advanceId,omitempty"`
+	AdvanceID    string               `json:"advanceId"`
 	Bills        []Bill               `json:"bills"`
 	CreatedAt    int64                `json:"createdAt"`
 	UpdatedAt    int64                `json:"updatedAt"`
@@ -41,6 +41,7 @@ type CreateExpenseRequest struct {
 	Description  string              `json:"description"`
 	Purpose      string              `json:"purpose"`
 	IsReconciled bool                `json:"isReconciled"`
+	AdvanceID    string              `json:"advanceId"`
 	Bills        []CreateBillRequest `json:"bills"`
 }
 
@@ -141,6 +142,7 @@ func ToCreateExpenseDomain(dto CreateExpenseRequest) domain.Expense {
 		Description:  dto.Description,
 		Purpose:      dto.Purpose,
 		IsReconciled: dto.IsReconciled,
+		AdvanceID:    dto.AdvanceID,
 		Bills:        bills,
 	}
 }

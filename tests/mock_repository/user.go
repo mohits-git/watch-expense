@@ -40,3 +40,8 @@ func (u *UserRepository) FindAllUsers(ctx context.Context) ([]domain.User, error
 	args := u.Called(ctx)
 	return args.Get(0).([]domain.User), args.Error(1)
 }
+
+func (u *UserRepository) DeleteUser(ctx context.Context, userID string) error {
+  args := u.Called(ctx, userID)
+  return args.Error(0)
+}

@@ -56,6 +56,11 @@ func (r *ExpenseRepository) SaveExpense(ctx context.Context, expense domain.Expe
 		}
 	}
 
+	if expense.IsReconciled {
+		advanceUpdateQuery := `UPDATE advances SET reconciled_expense_id = ? WHERE id = ?`
+		_, err = r.db.ExecContext(ctx, advanceUpdateQuery, expense.ID, expense.AdvanceID)
+	}
+
 	if err != nil {
 		return "", HandleMysqlError(err)
 	}
@@ -89,6 +94,11 @@ func (r *ExpenseRepository) UpdateExpense(ctx context.Context, expense domain.Ex
 		reviewedAt,
 		expense.IsReconciled,
 		expense.ID)
+
+	if expense.IsReconciled {
+		advanceUpdateQuery := `UPDATE advances SET reconciled_expense_id = ? WHERE id = ?`
+		_, err = r.db.ExecContext(ctx, advanceUpdateQuery, expense.ID, expense.AdvanceID)
+	}
 
 	if err != nil {
 		return HandleMysqlError(err)
