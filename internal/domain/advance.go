@@ -1,19 +1,19 @@
 package domain
 
 type Advance struct {
-	ID                   string
-	UserID               string
-	Amount               float64
-	Purpose              string
-	Description          string
-	Status               RequestStatus
+	ID                  string
+	UserID              string
+	Amount              float64
+	Purpose             string
+	Description         string
+	Status              RequestStatus
 	ReconciledExpenseID string
-	ApprovedBy           string
-	ApprovedAt           int64
-	ReviewedBy           string
-	ReviewedAt           int64
-	CreatedAt            int64
-	UpdatedAt            int64
+	ApprovedBy          string
+	ApprovedAt          int64
+	ReviewedBy          string
+	ReviewedAt          int64
+	CreatedAt           int64
+	UpdatedAt           int64
 }
 
 type AdvancesFilterOptions struct {
@@ -21,4 +21,11 @@ type AdvancesFilterOptions struct {
 	Status RequestStatus
 	Page   int
 	Limit  int
+}
+
+type AdvanceSummary struct {
+	Approved   float64
+	Reconciled float64
+	Pending    float64
+	Rejected   float64
 }

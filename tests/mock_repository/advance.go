@@ -34,3 +34,13 @@ func (a *AdvanceRepository) FindAllAdvances(ctx context.Context, filterOptions d
 	args := a.Called(ctx, filterOptions)
 	return args.Get(0).([]domain.Advance), args.Int(1), args.Error(2)
 }
+
+func (a *AdvanceRepository) GetAdvanceSumByStatus(ctx context.Context, userID string, status domain.RequestStatus) (float64, error) {
+	args := a.Called(ctx, userID, status)
+	return args.Get(0).(float64), args.Error(1)
+}
+
+func (a *AdvanceRepository) GetReconciledAdvancesSum(ctx context.Context, userID string) (float64, error) {
+	args := a.Called(ctx, userID)
+	return args.Get(0).(float64), args.Error(1)
+}

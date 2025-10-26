@@ -39,3 +39,8 @@ func (a *AdvanceService) GetAllAdvances(ctx context.Context, filterOptions domai
 	args := a.Called(ctx, filterOptions)
 	return args.Get(0).([]domain.Advance), args.Int(1), args.Error(2)
 }
+
+func (a *AdvanceService) GetAdvanceSummary(ctx context.Context) (domain.AdvanceSummary, error) {
+	args := a.Called(ctx)
+	return args.Get(0).(domain.AdvanceSummary), args.Error(1)
+}

@@ -72,9 +72,9 @@ func (r *AdvanceRepository) UpdateAdvance(ctx context.Context, advance domain.Ad
 		advance.Status,
 		nullString(advance.ReconciledExpenseID),
 		nullString(advance.ApprovedBy),
-    approvedAt,
+		approvedAt,
 		nullString(advance.ReviewedBy),
-    reviewedAt,
+		reviewedAt,
 		advance.ID)
 
 	if err != nil {
@@ -275,4 +275,45 @@ func (r *AdvanceRepository) FindAllAdvances(ctx context.Context, filterOptions d
 	}
 
 	return advances, totalCount, nil
+}
+
+func (r *AdvanceRepository) GetAdvanceSumByStatus(ctx context.Context, userID string, status domain.RequestStatus) (float64, error) {
+	query := `SELECT COALESCE(SUM(amount), 0) FROM advances WHERE 1=1`
+	args := []any{}
+
+	if userID != "" {
+		query += ` AND user_id = ?`
+		args = append(args, userID)
+	}
+
+	if status != "" {
+		query += ` AND status = ?`
+		args = append(args, status)
+	}
+
+	var sum float64
+	err := r.db.QueryRowContext(ctx, query, args...).Scan(&sum)
+	if err != nil {
+		return 0, HandleMysqlError(err)
+	}
+
+	return sum, nil
+}
+
+func (r *AdvanceRepository) GetReconciledAdvancesSum(ctx context.Context, userID string) (float64, error) {
+	query := `SELECT COALESCE(SUM(amount), 0) FROM advances WHERE reconciled_expense_id IS NOT NULL AND reconciled_expense_id != ''`
+	args := []any{}
+
+	if userID != "" {
+		query += ` AND user_id = ?`
+		args = append(args, userID)
+	}
+
+	var sum float64
+	err := r.db.QueryRowContext(ctx, query, args...).Scan(&sum)
+	if err != nil {
+		return 0, HandleMysqlError(err)
+	}
+
+	return sum, nil
 }

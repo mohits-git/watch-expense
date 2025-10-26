@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -18,6 +19,7 @@ type AdvanceService interface {
 	UpdateAdvance(ctx context.Context, advance domain.Advance) error
 	UpdateAdvanceStatus(ctx context.Context, advanceID string, status domain.RequestStatus) error
 	GetAllAdvances(ctx context.Context, filterOptions domain.AdvancesFilterOptions) ([]domain.Advance, int, error)
+	GetAdvanceSummary(ctx context.Context) (domain.AdvanceSummary, error)
 }
 
 type advanceService struct {
@@ -173,4 +175,86 @@ func (s *advanceService) GetAllAdvances(ctx context.Context, filterOptions domai
 		filterOptions.UserID = claims.UserID
 	}
 	return s.advanceRepo.FindAllAdvances(ctx, filterOptions)
+}
+
+func (s *advanceService) GetAdvanceSummary(ctx context.Context) (domain.AdvanceSummary, error) {
+	claims, ok := authctx.UserClaimsFromCtx(ctx)
+	if !ok {
+		return domain.AdvanceSummary{}, apperr.NewAppError(apperr.ErrUnauthorized, "unauthorized", nil)
+	}
+
+	userID := claims.UserID
+	if claims.Role == domain.Admin {
+		userID = ""
+	}
+
+	type result struct {
+		value float64
+		err   error
+	}
+
+	approvedChan := make(chan result, 1)
+	reconciledChan := make(chan result, 1)
+	pendingChan := make(chan result, 1)
+	rejectedChan := make(chan result, 1)
+
+	var wg sync.WaitGroup
+	wg.Add(4)
+
+	go func() {
+		defer wg.Done()
+		sum, err := s.advanceRepo.GetAdvanceSumByStatus(ctx, userID, domain.Approved)
+		approvedChan <- result{value: sum, err: err}
+	}()
+
+	go func() {
+		defer wg.Done()
+		sum, err := s.advanceRepo.GetReconciledAdvancesSum(ctx, userID)
+		reconciledChan <- result{value: sum, err: err}
+	}()
+
+	go func() {
+		defer wg.Done()
+		sum, err := s.advanceRepo.GetAdvanceSumByStatus(ctx, userID, domain.Pending)
+		pendingChan <- result{value: sum, err: err}
+	}()
+
+	go func() {
+		defer wg.Done()
+		sum, err := s.advanceRepo.GetAdvanceSumByStatus(ctx, userID, domain.Rejected)
+		rejectedChan <- result{value: sum, err: err}
+	}()
+
+	wg.Wait()
+	close(approvedChan)
+	close(reconciledChan)
+	close(pendingChan)
+	close(rejectedChan)
+
+	approvedResult := <-approvedChan
+	if approvedResult.err != nil {
+		return domain.AdvanceSummary{}, approvedResult.err
+	}
+
+	reconciledResult := <-reconciledChan
+	if reconciledResult.err != nil {
+		return domain.AdvanceSummary{}, reconciledResult.err
+	}
+
+	pendingResult := <-pendingChan
+	if pendingResult.err != nil {
+		return domain.AdvanceSummary{}, pendingResult.err
+	}
+
+	rejectedResult := <-rejectedChan
+	if rejectedResult.err != nil {
+		return domain.AdvanceSummary{}, rejectedResult.err
+	}
+
+	return domain.AdvanceSummary{
+		Approved:   approvedResult.value,
+		Reconciled: reconciledResult.value,
+		Pending:    pendingResult.value,
+		Rejected:   rejectedResult.value,
+	}, nil
 }

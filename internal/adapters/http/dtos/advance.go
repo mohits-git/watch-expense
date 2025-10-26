@@ -93,3 +93,12 @@ type AdvanceSummary struct {
 	Pending    float64 `json:"pendingReconciliation"`
 	Rejected   float64 `json:"rejectedAdvance"`
 }
+
+func ToAdvanceSummaryDTO(summary domain.AdvanceSummary) AdvanceSummary {
+	return AdvanceSummary{
+		Approved:   summary.Approved,
+		Reconciled: summary.Reconciled,
+		Pending:    summary.Pending,
+		Rejected:   summary.Rejected,
+	}
+}
