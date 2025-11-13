@@ -7,6 +7,7 @@ import (
 )
 
 func NewHTTPRouter(
+	environment string,
 	authMiddleware *handlers.AuthMiddleware,
 	commonHandler *handlers.CommonHandler,
 	authHandler *handlers.AuthHandler,
@@ -20,9 +21,6 @@ func NewHTTPRouter(
 	mux := http.NewServeMux()
 
 	publicRoutes := map[string]http.HandlerFunc{
-		// - docs routes
-		"GET /docs/openapi.yaml": commonHandler.ServeOpenAPISpec,
-		"GET /docs/":             commonHandler.SwaggerUIHandler().ServeHTTP,
 		// - health check
 		"GET /health": commonHandler.HealthCheck,
 		// - auth routes
@@ -32,6 +30,12 @@ func NewHTTPRouter(
 		"GET /public/images/": http.StripPrefix("/public/images/", http.FileServer(http.Dir("./public/images"))).ServeHTTP,
 		"POST /api/images":    imageUploadHandler.HandleUploadImage,
 		"DELETE /api/images":  imageUploadHandler.HandleDeleteImage,
+	}
+
+	if environment == "development" {
+		// - docs routes
+		publicRoutes["GET /docs/openapi.yaml"] = commonHandler.ServeOpenAPISpec
+		publicRoutes["GET /docs/"] = commonHandler.SwaggerUIHandler().ServeHTTP
 	}
 
 	authenticatedRoutes := map[string]http.HandlerFunc{

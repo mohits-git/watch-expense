@@ -8,6 +8,7 @@ import (
 )
 
 type Config struct {
+	ENVIRONMENT      string
 	MYSQL_DSN        string
 	JWT_SECRET       string
 	JWT_ISSUER       string
@@ -22,6 +23,11 @@ func LoadConfig() Config {
 	}
 
 	var config Config
+
+	config.ENVIRONMENT = os.Getenv("ENVIRONMENT")
+	if config.ENVIRONMENT == "" {
+		config.ENVIRONMENT = "development"
+	}
 
 	config.MYSQL_DSN = os.Getenv("MYSQL_DSN")
 	if config.MYSQL_DSN == "" {
