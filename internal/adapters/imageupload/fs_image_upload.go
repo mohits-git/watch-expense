@@ -19,6 +19,10 @@ type FSImageUpload struct {
 }
 
 func NewFSImageUpload(baseUrl, fileUploadDirectory string) ports.ImageUploadService {
+	// create the directory if it doesn't exist
+	if err := os.MkdirAll(fileUploadDirectory, os.ModePerm); err != nil {
+		log.Fatalf("Failed to create directory: %v", err)
+	}
 	return &FSImageUpload{
 		baseUrl:             baseUrl,
 		fileUploadDirectory: fileUploadDirectory,

@@ -1,0 +1,6 @@
+watch-expense
+.git/
+bin/
+.env
+docs/swagger/
+public/images/

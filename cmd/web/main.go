@@ -63,6 +63,7 @@ func main() {
 
 	// router
 	httpRouter := router.NewHTTPRouter(
+		cfg.ENVIRONMENT,
 		authMiddleware,
 		commonHandler,
 		authHandler,

@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
     name VARCHAR(63) NOT NULL,
     email VARCHAR(127) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
-    role VARCHAR(31) NOT NULL,
+    `role` VARCHAR(31) NOT NULL,
     project_id VARCHAR(36),
     department_id VARCHAR(36),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
