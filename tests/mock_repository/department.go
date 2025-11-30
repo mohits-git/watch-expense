@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/mohits-git/watch-expense/internal/domain"
-	"github.com/mohits-git/watch-expense/internal/ports"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -12,7 +11,7 @@ type DepartmentRepository struct {
   mock.Mock
 }
 
-func NewMockDepartmentRepository() ports.DepartmentRepository {
+func NewMockDepartmentRepository() *DepartmentRepository {
   return &DepartmentRepository{}
 }
 
