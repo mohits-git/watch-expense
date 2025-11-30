@@ -25,7 +25,7 @@ func main() {
 	defer db.Close()
 
 	// utils
-	bcryptProvidder := bcrypt.NewBcryptPasswordHasher(12)
+	bcryptProvider := bcrypt.NewBcryptPasswordHasher(12)
 	tokenProvider := jwttoken.NewJWTService(
 		cfg.JWT_SECRET,
 		cfg.JWT_ISSUER,
@@ -40,8 +40,8 @@ func main() {
 	advanceRepo := mysql.NewAdvanceRepository(db)
 
 	// services
-	authService := services.NewAuthenticationService(userRepo, tokenProvider, bcryptProvidder)
-	userService := services.NewUserService(userRepo, projectRepo)
+	authService := services.NewAuthenticationService(userRepo, tokenProvider, bcryptProvider)
+	userService := services.NewUserService(userRepo, projectRepo, bcryptProvider)
 	departmentService := services.NewDepartmentService(departmentRepo)
 	projectService := services.NewProjectService(projectRepo)
 	expenseService := services.NewExpenseService(expenseRepo)

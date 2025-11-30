@@ -7,6 +7,7 @@ import (
 	"github.com/mohits-git/watch-expense/internal/domain"
 	"github.com/mohits-git/watch-expense/internal/utils/apperr"
 	"github.com/mohits-git/watch-expense/internal/utils/authctx"
+	mockpasswordhasher "github.com/mohits-git/watch-expense/tests/mock_password_hasher"
 	mockrepository "github.com/mohits-git/watch-expense/tests/mock_repository"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -15,7 +16,8 @@ import (
 func Test_services_NewUserService(t *testing.T) {
 	userRepo := mockrepository.NewMockUserRepository()
 	projectRepo := mockrepository.NewMockProjectRepository()
-	userService := NewUserService(userRepo, projectRepo)
+	passwordHasher := &mockpasswordhasher.PasswordHasher{}
+	userService := NewUserService(userRepo, projectRepo, passwordHasher)
 	assert.NotNil(t, userService, "NewUserService() returned nil")
 }
 
@@ -27,7 +29,7 @@ func Test_services_UserService_CreateUser(t *testing.T) {
 	tests := []struct {
 		name        string
 		args        args
-		getMockRepo func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository)
+		getMockRepo func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository, *mockpasswordhasher.PasswordHasher)
 		wantErr     bool
 		errCode     apperr.AppErrorCode
 	}{
@@ -39,16 +41,19 @@ func Test_services_UserService_CreateUser(t *testing.T) {
 					Role:   domain.Admin,
 				}),
 				user: domain.User{
-					Email: "test@example.com",
-					Name:  "Test User",
-					Role:  domain.Employee,
+					Email:    "test@example.com",
+					Name:     "Test User",
+					Role:     domain.Employee,
+					Password: "password123",
 				},
 			},
-			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository) {
+			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository, *mockpasswordhasher.PasswordHasher) {
 				userRepo := mockrepository.NewMockUserRepository()
 				projectRepo := mockrepository.NewMockProjectRepository()
+				passwordHasher := &mockpasswordhasher.PasswordHasher{}
+				passwordHasher.On("HashPassword", "password123").Return("hashed_password", nil)
 				userRepo.On("SaveUser", mock.Anything, mock.AnythingOfType("domain.User")).Return("new-user-id", nil)
-				return userRepo, projectRepo
+				return userRepo, projectRepo, passwordHasher
 			},
 			wantErr: false,
 		},
@@ -57,15 +62,17 @@ func Test_services_UserService_CreateUser(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				user: domain.User{
-					Email: "test@example.com",
-					Name:  "Test User",
-					Role:  domain.Employee,
+					Email:    "test@example.com",
+					Name:     "Test User",
+					Role:     domain.Employee,
+					Password: "password123",
 				},
 			},
-			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository) {
+			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository, *mockpasswordhasher.PasswordHasher) {
 				userRepo := mockrepository.NewMockUserRepository()
 				projectRepo := mockrepository.NewMockProjectRepository()
-				return userRepo, projectRepo
+				passwordHasher := &mockpasswordhasher.PasswordHasher{}
+				return userRepo, projectRepo, passwordHasher
 			},
 			wantErr: true,
 			errCode: apperr.ErrUnauthorized,
@@ -78,15 +85,17 @@ func Test_services_UserService_CreateUser(t *testing.T) {
 					Role:   domain.Employee,
 				}),
 				user: domain.User{
-					Email: "test@example.com",
-					Name:  "Test User",
-					Role:  domain.Employee,
+					Email:    "test@example.com",
+					Name:     "Test User",
+					Role:     domain.Employee,
+					Password: "password123",
 				},
 			},
-			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository) {
+			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository, *mockpasswordhasher.PasswordHasher) {
 				userRepo := mockrepository.NewMockUserRepository()
 				projectRepo := mockrepository.NewMockProjectRepository()
-				return userRepo, projectRepo
+				passwordHasher := &mockpasswordhasher.PasswordHasher{}
+				return userRepo, projectRepo, passwordHasher
 			},
 			wantErr: true,
 			errCode: apperr.ErrUnauthorized,
@@ -99,15 +108,17 @@ func Test_services_UserService_CreateUser(t *testing.T) {
 					Role:   domain.Admin,
 				}),
 				user: domain.User{
-					Email: "",
-					Name:  "Test User",
-					Role:  domain.Employee,
+					Email:    "",
+					Name:     "Test User",
+					Role:     domain.Employee,
+					Password: "password123",
 				},
 			},
-			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository) {
+			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository, *mockpasswordhasher.PasswordHasher) {
 				userRepo := mockrepository.NewMockUserRepository()
 				projectRepo := mockrepository.NewMockProjectRepository()
-				return userRepo, projectRepo
+				passwordHasher := &mockpasswordhasher.PasswordHasher{}
+				return userRepo, projectRepo, passwordHasher
 			},
 			wantErr: true,
 			errCode: apperr.ErrInvalid,
@@ -120,15 +131,17 @@ func Test_services_UserService_CreateUser(t *testing.T) {
 					Role:   domain.Admin,
 				}),
 				user: domain.User{
-					Email: "test@example.com",
-					Name:  "",
-					Role:  domain.Employee,
+					Email:    "test@example.com",
+					Name:     "",
+					Role:     domain.Employee,
+					Password: "password123",
 				},
 			},
-			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository) {
+			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository, *mockpasswordhasher.PasswordHasher) {
 				userRepo := mockrepository.NewMockUserRepository()
 				projectRepo := mockrepository.NewMockProjectRepository()
-				return userRepo, projectRepo
+				passwordHasher := &mockpasswordhasher.PasswordHasher{}
+				return userRepo, projectRepo, passwordHasher
 			},
 			wantErr: true,
 			errCode: apperr.ErrInvalid,
@@ -141,15 +154,17 @@ func Test_services_UserService_CreateUser(t *testing.T) {
 					Role:   domain.Admin,
 				}),
 				user: domain.User{
-					Email: "test@example.com",
-					Name:  "Test User",
-					Role:  "",
+					Email:    "test@example.com",
+					Name:     "Test User",
+					Role:     "",
+					Password: "password123",
 				},
 			},
-			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository) {
+			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository, *mockpasswordhasher.PasswordHasher) {
 				userRepo := mockrepository.NewMockUserRepository()
 				projectRepo := mockrepository.NewMockProjectRepository()
-				return userRepo, projectRepo
+				passwordHasher := &mockpasswordhasher.PasswordHasher{}
+				return userRepo, projectRepo, passwordHasher
 			},
 			wantErr: true,
 			errCode: apperr.ErrInvalid,
@@ -158,8 +173,8 @@ func Test_services_UserService_CreateUser(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			userRepo, projectRepo := tt.getMockRepo()
-			userService := NewUserService(userRepo, projectRepo)
+			userRepo, projectRepo, passwordHasher := tt.getMockRepo()
+			userService := NewUserService(userRepo, projectRepo, passwordHasher)
 
 			result, err := userService.CreateUser(tt.args.ctx, tt.args.user)
 
@@ -174,12 +189,13 @@ func Test_services_UserService_CreateUser(t *testing.T) {
 			}
 
 			userRepo.AssertExpectations(t)
+			passwordHasher.AssertExpectations(t)
 		})
 	}
 }
 
 func Test_services_UserService_UpdateUser(t *testing.T) {
-  userID := "550e8400-e29b-41d4-a716-446655440000"
+	userID := "550e8400-e29b-41d4-a716-446655440000"
 	type args struct {
 		ctx  context.Context
 		user domain.User
@@ -187,7 +203,7 @@ func Test_services_UserService_UpdateUser(t *testing.T) {
 	tests := []struct {
 		name        string
 		args        args
-		getMockRepo func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository)
+		getMockRepo func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository, *mockpasswordhasher.PasswordHasher)
 		wantErr     bool
 		errCode     apperr.AppErrorCode
 	}{
@@ -205,11 +221,12 @@ func Test_services_UserService_UpdateUser(t *testing.T) {
 					Role:  domain.Employee,
 				},
 			},
-			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository) {
+			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository, *mockpasswordhasher.PasswordHasher) {
 				userRepo := mockrepository.NewMockUserRepository()
 				projectRepo := mockrepository.NewMockProjectRepository()
+				passwordHasher := &mockpasswordhasher.PasswordHasher{}
 				userRepo.On("UpdateUser", mock.Anything, mock.AnythingOfType("domain.User")).Return(nil)
-				return userRepo, projectRepo
+				return userRepo, projectRepo, passwordHasher
 			},
 			wantErr: false,
 		},
@@ -224,10 +241,11 @@ func Test_services_UserService_UpdateUser(t *testing.T) {
 					Role:  domain.Employee,
 				},
 			},
-			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository) {
+			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository, *mockpasswordhasher.PasswordHasher) {
 				userRepo := mockrepository.NewMockUserRepository()
 				projectRepo := mockrepository.NewMockProjectRepository()
-				return userRepo, projectRepo
+				passwordHasher := &mockpasswordhasher.PasswordHasher{}
+				return userRepo, projectRepo, passwordHasher
 			},
 			wantErr: true,
 			errCode: apperr.ErrUnauthorized,
@@ -246,10 +264,11 @@ func Test_services_UserService_UpdateUser(t *testing.T) {
 					Role:  domain.Employee,
 				},
 			},
-			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository) {
+			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository, *mockpasswordhasher.PasswordHasher) {
 				userRepo := mockrepository.NewMockUserRepository()
 				projectRepo := mockrepository.NewMockProjectRepository()
-				return userRepo, projectRepo
+				passwordHasher := &mockpasswordhasher.PasswordHasher{}
+				return userRepo, projectRepo, passwordHasher
 			},
 			wantErr: true,
 			errCode: apperr.ErrUnauthorized,
@@ -268,10 +287,11 @@ func Test_services_UserService_UpdateUser(t *testing.T) {
 					Role:  domain.Employee,
 				},
 			},
-			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository) {
+			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository, *mockpasswordhasher.PasswordHasher) {
 				userRepo := mockrepository.NewMockUserRepository()
 				projectRepo := mockrepository.NewMockProjectRepository()
-				return userRepo, projectRepo
+				passwordHasher := &mockpasswordhasher.PasswordHasher{}
+				return userRepo, projectRepo, passwordHasher
 			},
 			wantErr: true,
 			errCode: apperr.ErrInvalid,
@@ -280,8 +300,8 @@ func Test_services_UserService_UpdateUser(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			userRepo, projectRepo := tt.getMockRepo()
-			userService := NewUserService(userRepo, projectRepo)
+			userRepo, projectRepo, passwordHasher := tt.getMockRepo()
+			userService := NewUserService(userRepo, projectRepo, passwordHasher)
 
 			err := userService.UpdateUser(tt.args.ctx, tt.args.user)
 
@@ -295,6 +315,7 @@ func Test_services_UserService_UpdateUser(t *testing.T) {
 			}
 
 			userRepo.AssertExpectations(t)
+			passwordHasher.AssertExpectations(t)
 		})
 	}
 }
@@ -309,7 +330,7 @@ func Test_services_UserService_GetUserByID(t *testing.T) {
 	tests := []struct {
 		name        string
 		args        args
-		getMockRepo func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository)
+		getMockRepo func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository, *mockpasswordhasher.PasswordHasher)
 		want        domain.User
 		wantErr     bool
 		errCode     apperr.AppErrorCode
@@ -323,16 +344,17 @@ func Test_services_UserService_GetUserByID(t *testing.T) {
 				}),
 				userID: validUserID,
 			},
-			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository) {
+			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository, *mockpasswordhasher.PasswordHasher) {
 				userRepo := mockrepository.NewMockUserRepository()
 				projectRepo := mockrepository.NewMockProjectRepository()
+				passwordHasher := &mockpasswordhasher.PasswordHasher{}
 				userRepo.On("FindUserById", mock.Anything, validUserID).Return(domain.User{
 					ID:    validUserID,
 					Email: "test@example.com",
 					Name:  "Test User",
 					Role:  domain.Employee,
 				}, nil)
-				return userRepo, projectRepo
+				return userRepo, projectRepo, passwordHasher
 			},
 			want: domain.User{
 				ID:    validUserID,
@@ -351,16 +373,17 @@ func Test_services_UserService_GetUserByID(t *testing.T) {
 				}),
 				userID: validUserID,
 			},
-			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository) {
+			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository, *mockpasswordhasher.PasswordHasher) {
 				userRepo := mockrepository.NewMockUserRepository()
 				projectRepo := mockrepository.NewMockProjectRepository()
+				passwordHasher := &mockpasswordhasher.PasswordHasher{}
 				userRepo.On("FindUserById", mock.Anything, validUserID).Return(domain.User{
 					ID:    validUserID,
 					Email: "test@example.com",
 					Name:  "Test User",
 					Role:  domain.Employee,
 				}, nil)
-				return userRepo, projectRepo
+				return userRepo, projectRepo, passwordHasher
 			},
 			want: domain.User{
 				ID:    validUserID,
@@ -379,10 +402,11 @@ func Test_services_UserService_GetUserByID(t *testing.T) {
 				}),
 				userID: "invalid-id",
 			},
-			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository) {
+			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository, *mockpasswordhasher.PasswordHasher) {
 				userRepo := mockrepository.NewMockUserRepository()
 				projectRepo := mockrepository.NewMockProjectRepository()
-				return userRepo, projectRepo
+				passwordHasher := &mockpasswordhasher.PasswordHasher{}
+				return userRepo, projectRepo, passwordHasher
 			},
 			wantErr: true,
 			errCode: apperr.ErrInvalid,
@@ -393,10 +417,11 @@ func Test_services_UserService_GetUserByID(t *testing.T) {
 				ctx:    context.Background(),
 				userID: validUserID,
 			},
-			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository) {
+			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository, *mockpasswordhasher.PasswordHasher) {
 				userRepo := mockrepository.NewMockUserRepository()
 				projectRepo := mockrepository.NewMockProjectRepository()
-				return userRepo, projectRepo
+				passwordHasher := &mockpasswordhasher.PasswordHasher{}
+				return userRepo, projectRepo, passwordHasher
 			},
 			wantErr: true,
 			errCode: apperr.ErrUnauthorized,
@@ -410,10 +435,11 @@ func Test_services_UserService_GetUserByID(t *testing.T) {
 				}),
 				userID: validUserID,
 			},
-			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository) {
+			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository, *mockpasswordhasher.PasswordHasher) {
 				userRepo := mockrepository.NewMockUserRepository()
 				projectRepo := mockrepository.NewMockProjectRepository()
-				return userRepo, projectRepo
+				passwordHasher := &mockpasswordhasher.PasswordHasher{}
+				return userRepo, projectRepo, passwordHasher
 			},
 			wantErr: true,
 			errCode: apperr.ErrForbidden,
@@ -422,8 +448,8 @@ func Test_services_UserService_GetUserByID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			userRepo, projectRepo := tt.getMockRepo()
-			userService := NewUserService(userRepo, projectRepo)
+			userRepo, projectRepo, passwordHasher := tt.getMockRepo()
+			userService := NewUserService(userRepo, projectRepo, passwordHasher)
 
 			result, err := userService.GetUserByID(tt.args.ctx, tt.args.userID)
 
@@ -438,6 +464,7 @@ func Test_services_UserService_GetUserByID(t *testing.T) {
 			}
 
 			userRepo.AssertExpectations(t)
+			passwordHasher.AssertExpectations(t)
 		})
 	}
 }
@@ -446,7 +473,7 @@ func Test_services_UserService_GetAllUsers(t *testing.T) {
 	tests := []struct {
 		name        string
 		ctx         context.Context
-		getMockRepo func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository)
+		getMockRepo func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository, *mockpasswordhasher.PasswordHasher)
 		want        []domain.User
 		wantErr     bool
 		errCode     apperr.AppErrorCode
@@ -457,15 +484,16 @@ func Test_services_UserService_GetAllUsers(t *testing.T) {
 				UserID: "admin-id",
 				Role:   domain.Admin,
 			}),
-			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository) {
+			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository, *mockpasswordhasher.PasswordHasher) {
 				userRepo := mockrepository.NewMockUserRepository()
 				projectRepo := mockrepository.NewMockProjectRepository()
+				passwordHasher := &mockpasswordhasher.PasswordHasher{}
 				users := []domain.User{
 					{ID: "user-1", Email: "user1@example.com", Name: "User 1", Role: domain.Employee},
 					{ID: "user-2", Email: "user2@example.com", Name: "User 2", Role: domain.Employee},
 				}
 				userRepo.On("FindAllUsers", mock.Anything).Return(users, nil)
-				return userRepo, projectRepo
+				return userRepo, projectRepo, passwordHasher
 			},
 			want: []domain.User{
 				{ID: "user-1", Email: "user1@example.com", Name: "User 1", Role: domain.Employee},
@@ -476,10 +504,11 @@ func Test_services_UserService_GetAllUsers(t *testing.T) {
 		{
 			name: "unauthorized - no user claims",
 			ctx:  context.Background(),
-			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository) {
+			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository, *mockpasswordhasher.PasswordHasher) {
 				userRepo := mockrepository.NewMockUserRepository()
 				projectRepo := mockrepository.NewMockProjectRepository()
-				return userRepo, projectRepo
+				passwordHasher := &mockpasswordhasher.PasswordHasher{}
+				return userRepo, projectRepo, passwordHasher
 			},
 			wantErr: true,
 			errCode: apperr.ErrUnauthorized,
@@ -490,10 +519,11 @@ func Test_services_UserService_GetAllUsers(t *testing.T) {
 				UserID: "employee-id",
 				Role:   domain.Employee,
 			}),
-			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository) {
+			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository, *mockpasswordhasher.PasswordHasher) {
 				userRepo := mockrepository.NewMockUserRepository()
 				projectRepo := mockrepository.NewMockProjectRepository()
-				return userRepo, projectRepo
+				passwordHasher := &mockpasswordhasher.PasswordHasher{}
+				return userRepo, projectRepo, passwordHasher
 			},
 			wantErr: true,
 			errCode: apperr.ErrUnauthorized,
@@ -502,8 +532,8 @@ func Test_services_UserService_GetAllUsers(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			userRepo, projectRepo := tt.getMockRepo()
-			userService := NewUserService(userRepo, projectRepo)
+			userRepo, projectRepo, passwordHasher := tt.getMockRepo()
+			userService := NewUserService(userRepo, projectRepo, passwordHasher)
 
 			result, err := userService.GetAllUsers(tt.ctx)
 
@@ -518,6 +548,7 @@ func Test_services_UserService_GetAllUsers(t *testing.T) {
 			}
 
 			userRepo.AssertExpectations(t)
+			passwordHasher.AssertExpectations(t)
 		})
 	}
 }
@@ -532,7 +563,7 @@ func Test_services_UserService_DeleteUser(t *testing.T) {
 	tests := []struct {
 		name        string
 		args        args
-		getMockRepo func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository)
+		getMockRepo func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository, *mockpasswordhasher.PasswordHasher)
 		wantErr     bool
 		errCode     apperr.AppErrorCode
 	}{
@@ -545,11 +576,12 @@ func Test_services_UserService_DeleteUser(t *testing.T) {
 				}),
 				userID: validUserID,
 			},
-			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository) {
+			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository, *mockpasswordhasher.PasswordHasher) {
 				userRepo := mockrepository.NewMockUserRepository()
 				projectRepo := mockrepository.NewMockProjectRepository()
+				passwordHasher := &mockpasswordhasher.PasswordHasher{}
 				userRepo.On("DeleteUser", mock.Anything, validUserID).Return(nil)
-				return userRepo, projectRepo
+				return userRepo, projectRepo, passwordHasher
 			},
 			wantErr: false,
 		},
@@ -559,10 +591,11 @@ func Test_services_UserService_DeleteUser(t *testing.T) {
 				ctx:    context.Background(),
 				userID: validUserID,
 			},
-			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository) {
+			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository, *mockpasswordhasher.PasswordHasher) {
 				userRepo := mockrepository.NewMockUserRepository()
 				projectRepo := mockrepository.NewMockProjectRepository()
-				return userRepo, projectRepo
+				passwordHasher := &mockpasswordhasher.PasswordHasher{}
+				return userRepo, projectRepo, passwordHasher
 			},
 			wantErr: true,
 			errCode: apperr.ErrUnauthorized,
@@ -576,10 +609,11 @@ func Test_services_UserService_DeleteUser(t *testing.T) {
 				}),
 				userID: validUserID,
 			},
-			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository) {
+			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository, *mockpasswordhasher.PasswordHasher) {
 				userRepo := mockrepository.NewMockUserRepository()
 				projectRepo := mockrepository.NewMockProjectRepository()
-				return userRepo, projectRepo
+				passwordHasher := &mockpasswordhasher.PasswordHasher{}
+				return userRepo, projectRepo, passwordHasher
 			},
 			wantErr: true,
 			errCode: apperr.ErrUnauthorized,
@@ -593,10 +627,11 @@ func Test_services_UserService_DeleteUser(t *testing.T) {
 				}),
 				userID: validUserID,
 			},
-			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository) {
+			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository, *mockpasswordhasher.PasswordHasher) {
 				userRepo := mockrepository.NewMockUserRepository()
 				projectRepo := mockrepository.NewMockProjectRepository()
-				return userRepo, projectRepo
+				passwordHasher := &mockpasswordhasher.PasswordHasher{}
+				return userRepo, projectRepo, passwordHasher
 			},
 			wantErr: true,
 			errCode: apperr.ErrForbidden,
@@ -610,10 +645,11 @@ func Test_services_UserService_DeleteUser(t *testing.T) {
 				}),
 				userID: "invalid-id",
 			},
-			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository) {
+			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository, *mockpasswordhasher.PasswordHasher) {
 				userRepo := mockrepository.NewMockUserRepository()
 				projectRepo := mockrepository.NewMockProjectRepository()
-				return userRepo, projectRepo
+				passwordHasher := &mockpasswordhasher.PasswordHasher{}
+				return userRepo, projectRepo, passwordHasher
 			},
 			wantErr: true,
 			errCode: apperr.ErrInvalid,
@@ -622,8 +658,8 @@ func Test_services_UserService_DeleteUser(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			userRepo, projectRepo := tt.getMockRepo()
-			userService := NewUserService(userRepo, projectRepo)
+			userRepo, projectRepo, passwordHasher := tt.getMockRepo()
+			userService := NewUserService(userRepo, projectRepo, passwordHasher)
 
 			err := userService.DeleteUser(tt.args.ctx, tt.args.userID)
 
@@ -637,6 +673,7 @@ func Test_services_UserService_DeleteUser(t *testing.T) {
 			}
 
 			userRepo.AssertExpectations(t)
+			passwordHasher.AssertExpectations(t)
 		})
 	}
 }
@@ -648,7 +685,7 @@ func Test_services_UserService_GetUserBudget(t *testing.T) {
 	tests := []struct {
 		name        string
 		ctx         context.Context
-		getMockRepo func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository)
+		getMockRepo func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository, *mockpasswordhasher.PasswordHasher)
 		want        float64
 		wantErr     bool
 		errCode     apperr.AppErrorCode
@@ -659,9 +696,10 @@ func Test_services_UserService_GetUserBudget(t *testing.T) {
 				UserID: validUserID,
 				Role:   domain.Employee,
 			}),
-			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository) {
+			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository, *mockpasswordhasher.PasswordHasher) {
 				userRepo := mockrepository.NewMockUserRepository()
 				projectRepo := mockrepository.NewMockProjectRepository()
+				passwordHasher := &mockpasswordhasher.PasswordHasher{}
 				userRepo.On("FindUserById", mock.Anything, validUserID).Return(domain.User{
 					ID:        validUserID,
 					ProjectID: validProjectID,
@@ -670,7 +708,7 @@ func Test_services_UserService_GetUserBudget(t *testing.T) {
 					ID:     validProjectID,
 					Budget: 50000.00,
 				}, nil)
-				return userRepo, projectRepo
+				return userRepo, projectRepo, passwordHasher
 			},
 			want:    50000.00,
 			wantErr: false,
@@ -681,14 +719,15 @@ func Test_services_UserService_GetUserBudget(t *testing.T) {
 				UserID: validUserID,
 				Role:   domain.Employee,
 			}),
-			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository) {
+			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository, *mockpasswordhasher.PasswordHasher) {
 				userRepo := mockrepository.NewMockUserRepository()
 				projectRepo := mockrepository.NewMockProjectRepository()
+				passwordHasher := &mockpasswordhasher.PasswordHasher{}
 				userRepo.On("FindUserById", mock.Anything, validUserID).Return(domain.User{
 					ID:        validUserID,
 					ProjectID: "",
 				}, nil)
-				return userRepo, projectRepo
+				return userRepo, projectRepo, passwordHasher
 			},
 			want:    0,
 			wantErr: false,
@@ -699,16 +738,17 @@ func Test_services_UserService_GetUserBudget(t *testing.T) {
 				UserID: validUserID,
 				Role:   domain.Employee,
 			}),
-			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository) {
+			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository, *mockpasswordhasher.PasswordHasher) {
 				userRepo := mockrepository.NewMockUserRepository()
 				projectRepo := mockrepository.NewMockProjectRepository()
+				passwordHasher := &mockpasswordhasher.PasswordHasher{}
 				userRepo.On("FindUserById", mock.Anything, validUserID).Return(domain.User{
 					ID:        validUserID,
 					ProjectID: validProjectID,
 				}, nil)
 				projectRepo.On("FindProjectById", mock.Anything, validProjectID).
 					Return(domain.Project{}, apperr.NewAppError(apperr.ErrNotFound, "project not found", nil))
-				return userRepo, projectRepo
+				return userRepo, projectRepo, passwordHasher
 			},
 			want:    0,
 			wantErr: false,
@@ -716,10 +756,11 @@ func Test_services_UserService_GetUserBudget(t *testing.T) {
 		{
 			name: "unauthorized - no user claims",
 			ctx:  context.Background(),
-			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository) {
+			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository, *mockpasswordhasher.PasswordHasher) {
 				userRepo := mockrepository.NewMockUserRepository()
 				projectRepo := mockrepository.NewMockProjectRepository()
-				return userRepo, projectRepo
+				passwordHasher := &mockpasswordhasher.PasswordHasher{}
+				return userRepo, projectRepo, passwordHasher
 			},
 			wantErr: true,
 			errCode: apperr.ErrUnauthorized,
@@ -730,12 +771,13 @@ func Test_services_UserService_GetUserBudget(t *testing.T) {
 				UserID: validUserID,
 				Role:   domain.Employee,
 			}),
-			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository) {
+			getMockRepo: func() (*mockrepository.UserRepository, *mockrepository.ProjectRepository, *mockpasswordhasher.PasswordHasher) {
 				userRepo := mockrepository.NewMockUserRepository()
 				projectRepo := mockrepository.NewMockProjectRepository()
+				passwordHasher := &mockpasswordhasher.PasswordHasher{}
 				userRepo.On("FindUserById", mock.Anything, validUserID).
 					Return(domain.User{}, apperr.NewAppError(apperr.ErrNotFound, "user not found", nil))
-				return userRepo, projectRepo
+				return userRepo, projectRepo, passwordHasher
 			},
 			wantErr: true,
 			errCode: apperr.ErrNotFound,
@@ -744,8 +786,8 @@ func Test_services_UserService_GetUserBudget(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			userRepo, projectRepo := tt.getMockRepo()
-			userService := NewUserService(userRepo, projectRepo)
+			userRepo, projectRepo, passwordHasher := tt.getMockRepo()
+			userService := NewUserService(userRepo, projectRepo, passwordHasher)
 
 			result, err := userService.GetUserBudget(tt.ctx)
 
@@ -761,6 +803,7 @@ func Test_services_UserService_GetUserBudget(t *testing.T) {
 
 			userRepo.AssertExpectations(t)
 			projectRepo.AssertExpectations(t)
+			passwordHasher.AssertExpectations(t)
 		})
 	}
 }

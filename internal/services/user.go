@@ -21,14 +21,16 @@ type UserService interface {
 }
 
 type userService struct {
-	userRepo    ports.UserRepository
-	projectRepo ports.ProjectRepository
+	userRepo       ports.UserRepository
+	projectRepo    ports.ProjectRepository
+	passwordHasher ports.PasswordHasher
 }
 
-func NewUserService(userRepo ports.UserRepository, projectRepo ports.ProjectRepository) UserService {
+func NewUserService(userRepo ports.UserRepository, projectRepo ports.ProjectRepository, passwordHasher ports.PasswordHasher) UserService {
 	return &userService{
-		userRepo:    userRepo,
-		projectRepo: projectRepo,
+		userRepo:       userRepo,
+		projectRepo:    projectRepo,
+		passwordHasher: passwordHasher,
 	}
 }
 
@@ -40,6 +42,11 @@ func (s *userService) CreateUser(ctx context.Context, user domain.User) (string,
 	if !validator.ValidateUserCreation(user) {
 		return "", apperr.NewAppError(apperr.ErrInvalid, "invalid user data", nil)
 	}
+	hashedPassword, err := s.passwordHasher.HashPassword(user.Password)
+	if err != nil {
+		return "", apperr.NewAppError(apperr.ErrInternal, "failed to hash password", err)
+	}
+	user.Password = hashedPassword
 	user.ID = uuid.New().String()
 	return s.userRepo.SaveUser(ctx, user)
 }
@@ -51,6 +58,13 @@ func (s *userService) UpdateUser(ctx context.Context, user domain.User) error {
 	}
 	if !validator.ValidateUserUpdate(user) {
 		return apperr.NewAppError(apperr.ErrInvalid, "invalid user data", nil)
+	}
+	if user.Password != "" {
+		hashedPassword, err := s.passwordHasher.HashPassword(user.Password)
+		if err != nil {
+			return apperr.NewAppError(apperr.ErrInternal, "failed to hash password", err)
+		}
+		user.Password = hashedPassword
 	}
 	return s.userRepo.UpdateUser(ctx, user)
 }
