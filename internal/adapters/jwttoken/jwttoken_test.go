@@ -99,7 +99,7 @@ func Test_jwttoken_ValidateToken_when_invalid_user_claims(t *testing.T) {
 		"aud":     jwtService.audience,
 		"exp":     time.Now().Add(time.Hour * 24).Unix(),
 		"iat":     time.Now().Unix(),
-		"user_id": "1234",
+		"user_id": 1234,
 		"role":    "customer",
 	}
 
