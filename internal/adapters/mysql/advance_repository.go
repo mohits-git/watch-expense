@@ -134,62 +134,6 @@ func (r *AdvanceRepository) FindAdvanceById(ctx context.Context, advanceId strin
 	return advance, nil
 }
 
-func (r *AdvanceRepository) FindAdvancesByUserId(ctx context.Context, userId string) ([]domain.Advance, error) {
-	query := `SELECT id, user_id, amount, purpose, description, status, 
-			  reconciled_expense_id, 
-			  approved_by, 
-			  IFNULL(UNIX_TIMESTAMP(approved_at), 0), 
-			  reviewed_by, 
-			  IFNULL(UNIX_TIMESTAMP(reviewed_at), 0),
-			  UNIX_TIMESTAMP(created_at), 
-			  UNIX_TIMESTAMP(updated_at)
-			  FROM advances WHERE user_id = ?`
-
-	rows, err := r.db.QueryContext(ctx, query, userId)
-	if err != nil {
-		return nil, HandleMysqlError(err)
-	}
-	defer rows.Close()
-
-	advances := []domain.Advance{}
-	for rows.Next() {
-		var advance domain.Advance
-		var reconciledExpenseID, approvedBy, reviewedBy sql.NullString
-
-		err := rows.Scan(
-			&advance.ID,
-			&advance.UserID,
-			&advance.Amount,
-			&advance.Purpose,
-			&advance.Description,
-			&advance.Status,
-			&reconciledExpenseID,
-			&approvedBy,
-			&advance.ApprovedAt,
-			&reviewedBy,
-			&advance.ReviewedAt,
-			&advance.CreatedAt,
-			&advance.UpdatedAt,
-		)
-
-		if err != nil {
-			return nil, HandleMysqlError(err)
-		}
-
-		advance.ReconciledExpenseID = reconciledExpenseID.String
-		advance.ApprovedBy = approvedBy.String
-		advance.ReviewedBy = reviewedBy.String
-
-		advances = append(advances, advance)
-	}
-
-	if err = rows.Err(); err != nil {
-		return nil, HandleMysqlError(err)
-	}
-
-	return advances, nil
-}
-
 func (r *AdvanceRepository) FindAllAdvances(ctx context.Context, filterOptions domain.AdvancesFilterOptions) ([]domain.Advance, int, error) {
 	whereClause := "WHERE 1=1"
 	args := []any{}

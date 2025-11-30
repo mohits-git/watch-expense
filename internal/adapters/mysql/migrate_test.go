@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/go-sql-driver/mysql"
 	"github.com/stretchr/testify/assert"
-  "github.com/go-sql-driver/mysql"
 	"github.com/stretchr/testify/require"
 )
 
