@@ -120,7 +120,7 @@ func (s *expenseService) UpdateExpenseStatus(ctx context.Context, expenseID stri
 		return apperr.NewAppError(apperr.ErrInvalid, "invalid expense ID", nil)
 	}
 
-	if !validator.ValidateExpenseStatus(status) {
+	if !validator.ValidateExpenseStatus(status) || status == domain.Pending {
 		return apperr.NewAppError(apperr.ErrInvalid, "invalid status", nil)
 	}
 

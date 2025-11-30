@@ -67,8 +67,8 @@ func (s *advanceService) UpdateAdvance(ctx context.Context, advance domain.Advan
 		return apperr.NewAppError(apperr.ErrForbidden, "only employees can update advances", nil)
 	}
 
-	if !validator.ValidateUUID(advance.ID) {
-		return apperr.NewAppError(apperr.ErrInvalid, "invalid advance ID", nil)
+	if !validator.ValidateAdvanceUpdate(advance) {
+		return apperr.NewAppError(apperr.ErrInvalid, "invalid advance data", nil)
 	}
 
 	existingAdvance, err := s.advanceRepo.FindAdvanceById(ctx, advance.ID)
@@ -86,10 +86,6 @@ func (s *advanceService) UpdateAdvance(ctx context.Context, advance domain.Advan
 
 	advance.Status = domain.Pending
 	advance.UserID = claims.UserID
-
-	if !validator.ValidateAdvanceUpdate(advance) {
-		return apperr.NewAppError(apperr.ErrInvalid, "invalid advance data", nil)
-	}
 
 	advance.UpdatedAt = time.Now().Unix()
 	advance.CreatedAt = existingAdvance.CreatedAt
@@ -115,7 +111,7 @@ func (s *advanceService) UpdateAdvanceStatus(ctx context.Context, advanceID stri
 		return apperr.NewAppError(apperr.ErrInvalid, "invalid advance ID", nil)
 	}
 
-	if !validator.ValidateAdvanceStatus(status) {
+	if !validator.ValidateAdvanceStatus(status) || status == domain.Pending {
 		return apperr.NewAppError(apperr.ErrInvalid, "invalid status", nil)
 	}
 

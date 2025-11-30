@@ -16,20 +16,19 @@ func ValidateAdvanceCreation(advance domain.Advance) bool {
 func ValidateAdvanceUpdate(advance domain.Advance) bool {
 	if !ValidateUUID(advance.ID) ||
 		advance.Amount <= 0 ||
-		advance.UserID == "" ||
-		!ValidateUUID(advance.UserID) ||
+		(advance.UserID != "" && !ValidateUUID(advance.UserID)) ||
 		advance.Purpose == "" ||
-		advance.Status != domain.Pending {
+		(advance.Status != "" && advance.Status != domain.Pending) {
 		return false
 	}
 	return true
 }
 
 func ValidateAdvanceStatus(status domain.RequestStatus) bool {
-  switch status {
-  case domain.Pending, domain.Approved, domain.Rejected, domain.Reviewed:
-    return true
-  default:
-    return false
-  }
+	switch status {
+	case domain.Pending, domain.Approved, domain.Rejected, domain.Reviewed:
+		return true
+	default:
+		return false
+	}
 }
