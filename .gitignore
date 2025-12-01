@@ -1,6 +1,9 @@
-watch-expense
+# watchexpense
 .env
-docs/swagger/
 bin/
 public/images/
 cover.out
+watch-expense
+docs/swagger/
+# aws
+.aws-sam/
