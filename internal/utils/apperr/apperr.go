@@ -24,6 +24,7 @@ const (
 	ErrInvalid
 	ErrInternal
 	ErrTimeout
+	ErrTooLarge
 )
 
 func NewAppError(code AppErrorCode, message string, err error) *AppError {
@@ -88,4 +89,12 @@ func IsTimeoutError(err error) bool {
 		return false
 	}
 	return appErr.Code == ErrTimeout
+}
+
+func IsTooLargeError(err error) bool {
+	appErr, ok := err.(*AppError)
+	if !ok {
+		return false
+	}
+	return appErr.Code == ErrTooLarge
 }
