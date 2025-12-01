@@ -13,6 +13,7 @@ type Config struct {
 	JWT_ISSUER       string
 	JWT_AUDIENCE     string
 	UPLOAD_DIRECTORY string
+	S3_BUCKET_NAME   string
 }
 
 func LoadConfig() Config {
@@ -48,6 +49,11 @@ func LoadConfig() Config {
 	config.UPLOAD_DIRECTORY = os.Getenv("UPLOAD_DIRECTORY")
 	if config.UPLOAD_DIRECTORY == "" {
 		config.UPLOAD_DIRECTORY = "./public/images"
+	}
+
+	config.S3_BUCKET_NAME = os.Getenv("S3_BUCKET_NAME")
+	if config.S3_BUCKET_NAME == "" {
+		config.S3_BUCKET_NAME = "watch-expense-bucket"
 	}
 
 	return config

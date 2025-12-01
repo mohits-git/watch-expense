@@ -6,6 +6,6 @@ import (
 )
 
 type ImageUploadService interface {
-	UploadImage(ctx context.Context, imageData io.Reader) (url string, err error)
+	UploadImage(ctx context.Context, imageData io.Reader, name string) (url string, err error)
 	DeleteImage(ctx context.Context, imageUrl string) error
 }

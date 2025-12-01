@@ -29,8 +29,8 @@ func NewFSImageUpload(baseUrl, fileUploadDirectory string) ports.ImageUploadServ
 	}
 }
 
-func (s *FSImageUpload) UploadImage(ctx context.Context, imageData io.Reader) (string, error) {
-	id := uuid.New().String()
+func (s *FSImageUpload) UploadImage(ctx context.Context, imageData io.Reader, name string) (string, error) {
+	id := uuid.New().String() + "_" + name
 	filePath := filepath.Join(s.fileUploadDirectory, id)
 	log.Println(filePath)
 	file, err := os.Create(filePath)

@@ -46,7 +46,10 @@ func main() {
 	projectService := services.NewProjectService(projectRepo)
 	expenseService := services.NewExpenseService(expenseRepo)
 	advanceService := services.NewAdvanceService(advanceRepo)
-	imageService := imageupload.NewFSImageUpload("http://localhost:8080", cfg.UPLOAD_DIRECTORY)
+	imageService, err := imageupload.NewS3ImageUpload(ctx, cfg.S3_BUCKET_NAME)
+	if err != nil {
+		log.Fatal("Error while creating s3 image upload service", err)
+	}
 
 	// handlers
 	commonHandler := handlers.NewCommonHandler()
