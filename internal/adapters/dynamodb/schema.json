@@ -1,0 +1,75 @@
+{
+  "Users": {
+    "PK": "USER",
+    "SK": "UserID",
+    "UserID": "uuid",
+    "Name": "user name",
+    "Email": "email",
+    "PasswordHash": "hash",
+    "Role": "UserRole",
+    "ProjectID": "uuid",
+    "DepartmentID": "uuid",
+    "CreatedAt": "timestamp",
+    "UpdatedAt": "timestamp"
+  },
+  "Expenses": {
+    "PK": "EXPENSE",
+    "SK": "UserID#ExpenseID",
+    "ExpenseID": "uuid",
+    "UserID": "uuid",
+    "Amount": "decimal",
+    "Purpose": "expense_purpose",
+    "Description": "description",
+    "Status": "expense_status",
+    "IsReconciled": "boolean",
+    "ApprovedBy?": "uuid",
+    "ApprovedAt?": "timestamp",
+    "ReviewedBy?": "uuid",
+    "ReviewedAt?": "timestamp",
+    "Bills": [
+      {
+        "BillID": "uuid",
+        "Amount": "decimal",
+        "Description": "description",
+        "AttachmentURL": "url",
+      }
+    ],
+    "CreatedAt": "timestamp",
+    "UpdatedAt": "timestamp"
+  },
+  "Advances": {
+    "PK": "ADVANCE",
+    "SK": "UserID#AdvanceID",
+    "Amount": "decimal",
+    "Purpose": "advance_purpose",
+    "Description": "description",
+    "Status": "advance_status",
+    "ReconciledExpenseID?": "uuid",
+    "ApprovedBy?": "uuid",
+    "ApprovedAt?": "timestamp",
+    "ReviewedBy?": "uuid",
+    "ReviewedAt?": "timestamp",
+    "CreatedAt": "timestamp",
+    "UpdatedAt": "timestamp"
+  },
+  "Departments": {
+    "PK": "DEPARTMENT",
+    "SK": "DepartmentID",
+    "Name": "department_name",
+    "Budget": "department_budget",
+    "CreatedAt": "timestamp",
+    "UpdatedAt": "timestamp"
+  },
+  "Projects": {
+    "PK": "PROJECT",
+    "SK": "DepID#ProjectID",
+    "Name": "project_name",
+    "Description": "description",
+    "Budget": "budget",
+    "StartDate": "date",
+    "EndDate": "date",
+    "DepartmentID": "DepID",
+    "CreatedAt": "timestamp",
+    "UpdatedAt": "timestamp"
+  }
+}
