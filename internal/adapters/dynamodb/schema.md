@@ -9,12 +9,13 @@
     "SK": "PROFILE#UserId",
     "Type": "USER",
     "UserID": "user123",
+    "EmployeeID": "employeeId",
     "Name": "John Doe",
     "Email": "john@example.com",
     "Role": "Employee",
+    "PasswordHash": "hashpassword",
     "DepartmentID": "dept456",
     "ProjectID": "proj789",
-    "ManagerID": "mgr999",  // For approval routing
     "CreatedAt": "2025-01-01T00:00:00Z",
     "UpdatedAt": "2025-01-01T00:00:00Z"
   },
