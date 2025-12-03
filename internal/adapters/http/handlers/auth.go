@@ -62,17 +62,17 @@ func (h *AuthHandler) HandleLogout(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AuthHandler) HandleMe(w http.ResponseWriter, r *http.Request) {
-  user, err := h.authService.GetCurrentUser(r.Context())
-  if err != nil {
-    if apperr.IsUnauthorizedError(err) {
-      writeError(w, http.StatusUnauthorized, "unauthorized")
-    } else if apperr.IsNotFoundError(err) {
-      writeError(w, http.StatusNotFound, "user not found")
-    } else {
-      writeError(w, http.StatusInternalServerError, "internal server error")
-    }
-    return
-  }
-  userResponse := dtos.ToUserDTO(user)
-  writeResponse(w, http.StatusOK, "user details fetched successfully", userResponse)
+	user, err := h.authService.GetCurrentUser(r.Context())
+	if err != nil {
+		if apperr.IsUnauthorizedError(err) {
+			writeError(w, http.StatusUnauthorized, "unauthorized")
+		} else if apperr.IsNotFoundError(err) {
+			writeError(w, http.StatusNotFound, "user not found")
+		} else {
+			writeError(w, http.StatusInternalServerError, "internal server error")
+		}
+		return
+	}
+	userResponse := dtos.ToUserDTO(user)
+	writeResponse(w, http.StatusOK, "user details fetched successfully", userResponse)
 }

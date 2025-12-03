@@ -36,8 +36,11 @@ func NewUserService(userRepo ports.UserRepository, projectRepo ports.ProjectRepo
 
 func (s *userService) CreateUser(ctx context.Context, user domain.User) (string, error) {
 	claims, ok := authctx.UserClaimsFromCtx(ctx)
-	if !ok || claims.Role != domain.Admin {
-		return "", apperr.NewAppError(apperr.ErrUnauthorized, "only admin can create users", nil)
+	if !ok {
+		return "", apperr.NewAppError(apperr.ErrUnauthorized, "unauthorized", nil)
+	}
+	if claims.Role != domain.Admin {
+		return "", apperr.NewAppError(apperr.ErrForbidden, "only admin can create users", nil)
 	}
 	if !validator.ValidateUserCreation(user) {
 		return "", apperr.NewAppError(apperr.ErrInvalid, "invalid user data", nil)
@@ -54,7 +57,10 @@ func (s *userService) CreateUser(ctx context.Context, user domain.User) (string,
 func (s *userService) UpdateUser(ctx context.Context, user domain.User) error {
 	claims, ok := authctx.UserClaimsFromCtx(ctx)
 	if !ok || claims.Role != domain.Admin {
-		return apperr.NewAppError(apperr.ErrUnauthorized, "only admin can update users", nil)
+		return apperr.NewAppError(apperr.ErrUnauthorized, "unauthorized", nil)
+	}
+	if claims.Role != domain.Admin {
+		return apperr.NewAppError(apperr.ErrForbidden, "only admin can update users", nil)
 	}
 	if !validator.ValidateUserUpdate(user) {
 		return apperr.NewAppError(apperr.ErrInvalid, "invalid user data", nil)
@@ -85,8 +91,11 @@ func (s *userService) GetUserByID(ctx context.Context, userID string) (domain.Us
 
 func (s *userService) GetAllUsers(ctx context.Context) ([]domain.User, error) {
 	claims, ok := authctx.UserClaimsFromCtx(ctx)
-	if !ok || claims.Role != domain.Admin {
+	if !ok {
 		return nil, apperr.NewAppError(apperr.ErrUnauthorized, "only admin can access all users", nil)
+	}
+	if claims.Role != domain.Admin {
+		return nil, apperr.NewAppError(apperr.ErrForbidden, "forbidden", nil)
 	}
 	return s.userRepo.FindAllUsers(ctx)
 }
