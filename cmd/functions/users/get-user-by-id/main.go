@@ -6,8 +6,6 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/aws/aws-sdk-go-v2/config"
-	ddb "github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/mohits-git/watch-expense/internal/adapters/bcrypt"
 	"github.com/mohits-git/watch-expense/internal/adapters/dynamodb"
 	"github.com/mohits-git/watch-expense/internal/adapters/http/dtos"
@@ -24,20 +22,12 @@ var (
 	authMiddleware *middleware.AuthMiddleware
 )
 
-func initDynamoDBClient(ctx context.Context) (*ddb.Client, error) {
-	cfg, err := config.LoadDefaultConfig(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return ddb.NewFromConfig(cfg), nil
-}
-
 func init() {
 	ctx := context.Background()
 
 	cfg := cfg.LoadConfig()
 
-	ddbClient, err := initDynamoDBClient(ctx)
+	ddbClient, err := dynamodb.InitDynamoDBClient(ctx)
 	if err != nil {
 		panic(err)
 	}
