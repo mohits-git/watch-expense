@@ -114,6 +114,7 @@ Resources:
     Metadata:
       BuildMethod: go1.x
     Properties:
+      FunctionName: WatchExpense_Auth_Login
       CodeUri: ./cmd/functions/auth/login
       Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
       Events:
@@ -128,6 +129,7 @@ Resources:
     Metadata:
       BuildMethod: go1.x
     Properties:
+      FunctionName: WatchExpense_Users_GetAllUsers
       CodeUri: ./cmd/functions/users/get-all-users
       Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
       Events:
@@ -142,6 +144,7 @@ Resources:
     Metadata:
       BuildMethod: go1.x
     Properties:
+      FunctionName: WatchExpense_Users_GetUserById
       CodeUri: ./cmd/functions/users/get-user-by-id
       Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
       Events:
@@ -156,6 +159,7 @@ Resources:
     Metadata:
       BuildMethod: go1.x
     Properties:
+      FunctionName: WatchExpense_Users_CreateUser
       CodeUri: ./cmd/functions/users/create-user
       Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
       Events:
@@ -170,6 +174,7 @@ Resources:
     Metadata:
       BuildMethod: go1.x
     Properties:
+      FunctionName: WatchExpense_Users_UpdateUser
       CodeUri: ./cmd/functions/users/update-user
       Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
       Events:
