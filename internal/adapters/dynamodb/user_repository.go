@@ -276,7 +276,6 @@ func (repo *UserRepository) toDomainUser(userItem map[string]types.AttributeValu
 		if ok {
 			projectId = projectAttr.Value
 		}
-
 	}
 	return domain.User{
 		ID:           userItem["UserID"].(*types.AttributeValueMemberS).Value,

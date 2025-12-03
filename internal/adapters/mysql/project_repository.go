@@ -18,7 +18,7 @@ func NewProjectRepository(db *sql.DB) ports.ProjectRepository {
 }
 
 func (r *ProjectRepository) SaveProject(ctx context.Context, project domain.Project) (string, error) {
-	query := `INSERT INTO projects (id, name, description, budget, start_date, end_date, department_id) 
+	query := `INSERT INTO projects (id, name, description, budget, start_date, end_date, department_id)
 			  VALUES (?, ?, ?, ?, ?, ?, ?)`
 
 	_, err := r.db.ExecContext(ctx, query,

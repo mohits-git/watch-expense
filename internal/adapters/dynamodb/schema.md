@@ -108,6 +108,7 @@
   {
     "PK": "PROJECT",
     "SK": "PROJECT#DepID#ProjectID",
+    "ProjectID": "uuid",
     "Name": "project_name",
     "Description": "description",
     "Budget": "budget",
@@ -121,9 +122,8 @@
   /* ProjectId - DepartmentId index */
   {
     "PK": "PROJECT",
-    "SK": "Department#<projectID>",
-    "DepartmentId": "uuid"
-
+    "SK": "DEPARTMENT#<projectID>",
+    "DepartmentID": "uuid"
   }
 ]
 ```
