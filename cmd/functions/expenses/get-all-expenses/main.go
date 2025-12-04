@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -50,7 +51,7 @@ func parseExpensesFilterOptions(event events.APIGatewayProxyRequest) (domain.Exp
 	page := 0
 	limitStr := event.QueryStringParameters["limit"]
 	limit := 10
-	userID := event.RequestContext.Authorizer["user_id"].(string)
+	userID := event.QueryStringParameters["user_id"]
 
 	if pageStr != "" {
 		page, err = strconv.Atoi(pageStr)
@@ -82,6 +83,7 @@ func handler(ctx context.Context, event events.APIGatewayProxyRequest) (events.A
 
 	expenses, total, err := expenseService.GetAllExpenses(ctx, filterOptions)
 	if err != nil {
+		log.Println("EXPENSE FETCH ALL ERROR:- ", err)
 		if apperr.IsInvalidError(err) {
 			return utils.BuildErrorResponse(http.StatusBadRequest, "invalid request parameters"), nil
 		}

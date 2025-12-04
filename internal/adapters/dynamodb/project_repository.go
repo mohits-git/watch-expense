@@ -43,7 +43,7 @@ func (repo *ProjectRepository) SaveProject(ctx context.Context, project domain.P
 					TableName: aws.String(repo.tableName),
 					Item: map[string]types.AttributeValue{
 						"PK":           &types.AttributeValueMemberS{Value: "PROJECT"},
-						"SK":           &types.AttributeValueMemberS{Value: fmt.Sprintf("PROJECT#%s#%s", project.DepartmentID, project.ID)},
+						"SK":           &types.AttributeValueMemberS{Value: fmt.Sprintf("DETAILS#%s#%s", project.DepartmentID, project.ID)},
 						"ProjectID":    &types.AttributeValueMemberS{Value: project.ID},
 						"Name":         &types.AttributeValueMemberS{Value: project.Name},
 						"Description":  &types.AttributeValueMemberS{Value: project.Description},
@@ -93,7 +93,7 @@ func (repo *ProjectRepository) UpdateProject(ctx context.Context, project domain
 				TableName: aws.String(repo.tableName),
 				Key: map[string]types.AttributeValue{
 					"PK": &types.AttributeValueMemberS{Value: "PROJECT"},
-					"SK": &types.AttributeValueMemberS{Value: fmt.Sprintf("PROJECT#%s#%s", prevDepartmentId, project.ID)},
+					"SK": &types.AttributeValueMemberS{Value: fmt.Sprintf("DETAILS#%s#%s", prevDepartmentId, project.ID)},
 				},
 				UpdateExpression:          updateExpression.Update(),
 				ExpressionAttributeNames:  updateExpression.Names(),
@@ -137,7 +137,7 @@ func (repo *ProjectRepository) FindProjectById(ctx context.Context, projectId st
 		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :sk)"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":pk": &types.AttributeValueMemberS{Value: "PROJECT"},
-			":sk": &types.AttributeValueMemberS{Value: fmt.Sprintf("PROJECT#%s#%s", departmentId, projectId)},
+			":sk": &types.AttributeValueMemberS{Value: fmt.Sprintf("DETAILS#%s#%s", departmentId, projectId)},
 		},
 	})
 	if err != nil {
@@ -155,7 +155,7 @@ func (repo *ProjectRepository) FindAllProjects(ctx context.Context) ([]domain.Pr
 		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :sk)"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":pk": &types.AttributeValueMemberS{Value: "PROJECT"},
-			":sk": &types.AttributeValueMemberS{Value: "PROJECT#"},
+			":sk": &types.AttributeValueMemberS{Value: "DETAILS#"},
 		},
 	})
 	if err != nil {

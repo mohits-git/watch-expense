@@ -41,7 +41,7 @@ func (repo *DepartmentRepository) SaveDepartment(ctx context.Context, department
 		TableName: aws.String(repo.tableName),
 		Item: map[string]types.AttributeValue{
 			"PK":           &types.AttributeValueMemberS{Value: "DEPARTMENT"},
-			"SK":           &types.AttributeValueMemberS{Value: fmt.Sprintf("DEPARTMENT#%s", department.ID)},
+			"SK":           &types.AttributeValueMemberS{Value: fmt.Sprintf("DETAILS#%s", department.ID)},
 			"DepartmentID": &types.AttributeValueMemberS{Value: department.ID},
 			"Name":         &types.AttributeValueMemberS{Value: department.Name},
 			"Budget":       &types.AttributeValueMemberN{Value: fmt.Sprintf("%2f", department.Budget)},

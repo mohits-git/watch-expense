@@ -30,7 +30,7 @@ func addCorsHeaders(headers map[string]string) map[string]string {
 	}
 
 	if headers != nil {
-    maps.Copy(withCorsHeaders, headers)
+		maps.Copy(withCorsHeaders, headers)
 	}
 
 	return withCorsHeaders

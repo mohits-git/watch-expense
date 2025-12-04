@@ -142,8 +142,11 @@ func (repo *ExpenseRepository) FindAllExpenses(ctx context.Context, filterOption
 	}
 
 	if filterOptions.Status != "" {
-		queryInput.FilterExpression = aws.String("Status = :status")
+		queryInput.FilterExpression = aws.String("#status = :status")
 		queryInput.ExpressionAttributeValues[":status"] = &types.AttributeValueMemberS{Value: string(filterOptions.Status)}
+		queryInput.ExpressionAttributeNames = map[string]string{
+			"#status": "Status",
+		}
 	}
 
 	// total records
@@ -159,7 +162,7 @@ func (repo *ExpenseRepository) FindAllExpenses(ctx context.Context, filterOption
 		ctx,
 		repo.client,
 		queryInput,
-		filterOptions.Page,
+		filterOptions.Page-1,
 		filterOptions.Limit,
 	)
 	if err != nil {
@@ -194,12 +197,15 @@ func (repo *ExpenseRepository) GetExpenseSumByStatus(ctx context.Context, userID
 	result, err := repo.client.Query(ctx, &dynamodb.QueryInput{
 		TableName:              aws.String(repo.tableName),
 		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :sk)"),
-		FilterExpression:       aws.String("Status = :status"),
+		FilterExpression:       aws.String("#status = :status"),
 		ProjectionExpression:   aws.String("Amount"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":pk":     &types.AttributeValueMemberS{Value: "EXPENSE"},
 			":sk":     &types.AttributeValueMemberS{Value: fmt.Sprintf("DETAILS#%s", userID)},
 			":status": &types.AttributeValueMemberS{Value: string(status)},
+		},
+		ExpressionAttributeNames: map[string]string{
+			"#status": "Status",
 		},
 	})
 	if err != nil {

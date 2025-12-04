@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"log"
 	"net/http"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -43,6 +44,7 @@ func init() {
 func handler(ctx context.Context, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	summary, err := expenseService.GetExpenseSummary(ctx)
 	if err != nil {
+    log.Println("ERROR getting summary: ", err)
 		return utils.HandleDefaultErrors(err), nil
 	}
 	summaryDTO := dtos.ToExpenseSummaryDTO(summary)
