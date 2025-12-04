@@ -184,6 +184,21 @@ Resources:
             Method: put
             Path: /api/users/{id}
             RestApiId: !Ref WatchExpenseAPI
+  DeleteUser:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      FunctionName: WatchExpense_Users_DeleteUser
+      CodeUri: ./cmd/functions/users/delete-user
+      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Method: delete
+            Path: /api/users/{id}
+            RestApiId: !Ref WatchExpenseAPI
 
 Outputs:
   WatchExpensePublicBucketName:

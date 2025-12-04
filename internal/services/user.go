@@ -102,8 +102,11 @@ func (s *userService) GetAllUsers(ctx context.Context) ([]domain.User, error) {
 
 func (s *userService) DeleteUser(ctx context.Context, userID string) error {
 	claims, ok := authctx.UserClaimsFromCtx(ctx)
-	if !ok || claims.Role != domain.Admin {
+	if !ok {
 		return apperr.NewAppError(apperr.ErrUnauthorized, "only admin can delete users", nil)
+	}
+	if claims.Role != domain.Admin {
+		return apperr.NewAppError(apperr.ErrForbidden, "forbidden", nil)
 	}
 	if claims.UserID == userID {
 		return apperr.NewAppError(apperr.ErrForbidden, "admin cannot delete self", nil)
