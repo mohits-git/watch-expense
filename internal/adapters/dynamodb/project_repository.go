@@ -12,12 +12,20 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/google/uuid"
 	"github.com/mohits-git/watch-expense/internal/domain"
+	"github.com/mohits-git/watch-expense/internal/ports"
 	"github.com/mohits-git/watch-expense/internal/utils/apperr"
 )
 
 type ProjectRepository struct {
 	client    *dynamodb.Client
 	tableName string
+}
+
+func NewProjectRepository(client *dynamodb.Client, tableName string) ports.ProjectRepository {
+	return &ProjectRepository{
+		client:    client,
+		tableName: tableName,
+	}
 }
 
 func (repo *ProjectRepository) SaveProject(ctx context.Context, project domain.Project) (string, error) {

@@ -127,17 +127,57 @@ func (repo *ExpenseRepository) FindExpenseById(ctx context.Context, expenseId st
 }
 
 func (repo *ExpenseRepository) FindAllExpenses(ctx context.Context, filterOptions domain.ExpensesFilterOptions) ([]domain.Expense, int, error) {
-	result, err := repo.client.Query(ctx, &dynamodb.QueryInput{
+	var err error
+	queryInput := &dynamodb.QueryInput{
 		TableName:              aws.String(repo.tableName),
 		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :sk)"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
-			"PK": &types.AttributeValueMemberS{Value: "EXPENSE"},
-			"SK": &types.AttributeValueMemberS{Value: "DETAILS#"},
+			":pk": &types.AttributeValueMemberS{Value: "EXPENSE"},
+			":sk": &types.AttributeValueMemberS{Value: "DETAILS#"},
 		},
-	})
+	}
+
+	if filterOptions.UserID != "" {
+		queryInput.ExpressionAttributeValues[":sk"] = &types.AttributeValueMemberS{Value: fmt.Sprintf("DETAILS#%s#", filterOptions.UserID)}
+	}
+
+	if filterOptions.Status != "" {
+		queryInput.FilterExpression = aws.String("Status = :status")
+		queryInput.ExpressionAttributeValues[":status"] = &types.AttributeValueMemberS{Value: string(filterOptions.Status)}
+	}
+
+	// total records
+	queryInput.Select = types.SelectCount
+	countResult, err := repo.client.Query(ctx, queryInput)
 	if err != nil {
 		return []domain.Expense{}, 0, apperr.NewAppError(apperr.ErrInternal, "Error fetching expense from dynamodb", err)
 	}
+	totalRecords := countResult.Count
+
+	// fast cursor
+	queryInput, _, err = offsetQuery(
+		ctx,
+		repo.client,
+		queryInput,
+		filterOptions.Page,
+		filterOptions.Limit,
+	)
+	if err != nil {
+		return []domain.Expense{}, 0, err
+	}
+	// if no results for the page
+	if queryInput == nil {
+		return []domain.Expense{}, 0, nil
+	}
+
+	// expenses
+	queryInput.Select = types.SelectAllAttributes
+	queryInput.Limit = aws.Int32(int32(filterOptions.Limit))
+	result, err := repo.client.Query(ctx, queryInput)
+	if err != nil {
+		return []domain.Expense{}, 0, apperr.NewAppError(apperr.ErrInternal, "Error fetching expense from dynamodb", err)
+	}
+
 	expenses := []domain.Expense{}
 	for _, item := range result.Items {
 		expense, err := repo.toDomainExpense(item)
@@ -146,7 +186,8 @@ func (repo *ExpenseRepository) FindAllExpenses(ctx context.Context, filterOption
 		}
 		expenses = append(expenses, expense)
 	}
-	return expenses, len(expenses), nil
+
+	return expenses, int(totalRecords), nil
 }
 
 func (repo *ExpenseRepository) GetExpenseSumByStatus(ctx context.Context, userID string, status domain.RequestStatus) (float64, error) {
@@ -157,7 +198,7 @@ func (repo *ExpenseRepository) GetExpenseSumByStatus(ctx context.Context, userID
 		ProjectionExpression:   aws.String("Amount"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":pk":     &types.AttributeValueMemberS{Value: "EXPENSE"},
-			":sk":     &types.AttributeValueMemberS{Value: "DETAILS#"},
+			":sk":     &types.AttributeValueMemberS{Value: fmt.Sprintf("DETAILS#%s", userID)},
 			":status": &types.AttributeValueMemberS{Value: string(status)},
 		},
 	})
