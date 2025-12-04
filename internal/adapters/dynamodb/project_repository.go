@@ -67,41 +67,6 @@ func (repo *ProjectRepository) SaveProject(ctx context.Context, project domain.P
 	return project.ID, nil
 }
 
-func (repo *ProjectRepository) buildUpdateExpression(project domain.Project) (expression.Expression, error) {
-	update := expression.Set(expression.Name("Name"), expression.Value(project.Name))
-	update.Set(expression.Name("Description"), expression.Value(project.Description))
-	update.Set(expression.Name("Budget"), expression.Value(project.Budget))
-	update.Set(expression.Name("DepartmentID"), expression.Value(project.DepartmentID))
-	update.Set(expression.Name("StartDate"), expression.Value(project.StartDate))
-	update.Set(expression.Name("EndDate"), expression.Value(project.EndDate))
-	update.Set(expression.Name("UpdatedAt"), expression.Value(project.UpdatedAt))
-
-	expr, err := expression.NewBuilder().WithUpdate(update).Build()
-	if err != nil {
-		return expression.Expression{}, apperr.NewAppError(apperr.ErrInternal, "Error while building update expression", err)
-	}
-	return expr, nil
-}
-
-func (repo *ProjectRepository) findDepartmentIdByProject(ctx context.Context, projectId string) (string, error) {
-	result, err := repo.client.Query(ctx, &dynamodb.QueryInput{
-		TableName:              aws.String(repo.tableName),
-		KeyConditionExpression: aws.String("PK = :pk AND SK = :sk"),
-		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":pk": &types.AttributeValueMemberS{Value: "PROJECT"},
-			":sk": &types.AttributeValueMemberS{Value: fmt.Sprintf("DEPARTMENT#%s", projectId)},
-		},
-	})
-	if err != nil {
-		return "", err
-	}
-	if len(result.Items) == 0 {
-		return "", apperr.NewAppError(apperr.ErrNotFound, "Project not found for specified id", nil)
-	}
-	departmentId := result.Items[0]["DepartmentID"].(*types.AttributeValueMemberS).Value
-	return departmentId, nil
-}
-
 func (repo *ProjectRepository) UpdateProject(ctx context.Context, project domain.Project) error {
 	prevDepartmentId, err := repo.findDepartmentIdByProject(ctx, project.ID)
 	if err != nil {
@@ -193,6 +158,41 @@ func (repo *ProjectRepository) FindAllProjects(ctx context.Context) ([]domain.Pr
 		projects = append(projects, repo.toDomainProject(projectItem))
 	}
 	return projects, nil
+}
+
+func (repo *ProjectRepository) buildUpdateExpression(project domain.Project) (expression.Expression, error) {
+	update := expression.Set(expression.Name("Name"), expression.Value(project.Name))
+	update.Set(expression.Name("Description"), expression.Value(project.Description))
+	update.Set(expression.Name("Budget"), expression.Value(project.Budget))
+	update.Set(expression.Name("DepartmentID"), expression.Value(project.DepartmentID))
+	update.Set(expression.Name("StartDate"), expression.Value(project.StartDate))
+	update.Set(expression.Name("EndDate"), expression.Value(project.EndDate))
+	update.Set(expression.Name("UpdatedAt"), expression.Value(project.UpdatedAt))
+
+	expr, err := expression.NewBuilder().WithUpdate(update).Build()
+	if err != nil {
+		return expression.Expression{}, apperr.NewAppError(apperr.ErrInternal, "Error while building update expression", err)
+	}
+	return expr, nil
+}
+
+func (repo *ProjectRepository) findDepartmentIdByProject(ctx context.Context, projectId string) (string, error) {
+	result, err := repo.client.Query(ctx, &dynamodb.QueryInput{
+		TableName:              aws.String(repo.tableName),
+		KeyConditionExpression: aws.String("PK = :pk AND SK = :sk"),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":pk": &types.AttributeValueMemberS{Value: "PROJECT"},
+			":sk": &types.AttributeValueMemberS{Value: fmt.Sprintf("DEPARTMENT#%s", projectId)},
+		},
+	})
+	if err != nil {
+		return "", err
+	}
+	if len(result.Items) == 0 {
+		return "", apperr.NewAppError(apperr.ErrNotFound, "Project not found for specified id", nil)
+	}
+	departmentId := result.Items[0]["DepartmentID"].(*types.AttributeValueMemberS).Value
+	return departmentId, nil
 }
 
 func (repo *ProjectRepository) toDomainProject(projectItem map[string]types.AttributeValue) domain.Project {

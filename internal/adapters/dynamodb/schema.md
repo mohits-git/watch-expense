@@ -33,7 +33,7 @@
   ------------------------------------------------------------*/
   {
     "PK": "EXPENSE",
-    "SK": "EXPESEN#UserID#ExpenseID",
+    "SK": "DETAILS#UserID#ExpenseID",
     "ExpenseID": "uuid",
     "UserID": "uuid",
     "Amount": "decimal",
@@ -71,6 +71,8 @@
   {
     "PK": "ADVANCE",
     "SK": "UserID#AdvanceID",
+    "AdvanceID": "uuid",
+    "UserID": "uuid",
     "Amount": "decimal",
     "Purpose": "advance_purpose",
     "Description": "description",
@@ -96,7 +98,8 @@
   ------------------------------------------------------------*/
   {
     "PK": "DEPARTMENT",
-    "SK": "DepartmentID",
+    "SK": "DETAILS#DepartmentID",
+    "DepartmentID": "uuid",
     "Name": "department_name",
     "Budget": "department_budget",
     "CreatedAt": "timestamp",
