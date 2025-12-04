@@ -14,11 +14,12 @@ import (
 	"github.com/mohits-git/watch-expense/internal/adapters/lambda/middleware"
 	"github.com/mohits-git/watch-expense/internal/adapters/lambda/utils"
 	"github.com/mohits-git/watch-expense/internal/services"
-	"github.com/mohits-git/watch-expense/internal/utils/apperr"
+	"github.com/mohits-git/watch-expense/internal/utils/authctx"
 )
 
 var (
-	authService services.AuthenticationService
+	authService    services.AuthenticationService
+	authMiddleware *middleware.AuthMiddleware
 )
 
 func init() {
@@ -40,31 +41,26 @@ func init() {
 	)
 
 	authService = services.NewAuthenticationService(userRepo, tokenProvider, bcryptProvider)
+	authMiddleware = middleware.NewAuthMiddleware(tokenProvider)
 }
 
 func handler(ctx context.Context, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	loginRequest, err := utils.DecodeJson[dtos.LoginRequest](event.Body)
-	if err != nil {
-		return utils.BuildErrorResponse(http.StatusBadRequest, "invalid request"), nil
+	token, ok := authctx.TokenFromCtx(ctx)
+	if !ok {
+		return utils.BuildErrorResponse(http.StatusUnauthorized, "unauthorized"), nil
 	}
 
-	token, err := authService.Login(ctx, loginRequest.Email, loginRequest.Password)
+	err := authService.Logout(ctx, token)
 	if err != nil {
-		if apperr.IsNotFoundError(err) || apperr.IsUnauthorizedError(err) {
-			return utils.BuildErrorResponse(http.StatusUnauthorized, "invalid email or password"), nil
-		} else if apperr.IsInvalidError(err) {
-			return utils.BuildErrorResponse(http.StatusBadRequest, "invalid inputs"), nil
-		} else {
-			return utils.BuildErrorResponse(http.StatusInternalServerError, "internal server error"), nil
-		}
+		return utils.BuildErrorResponse(http.StatusInternalServerError, "internal server error"), nil
 	}
 
-	loginResponse := dtos.LoginResponse{Token: token}
-	resp := utils.BuildResponse(http.StatusOK, "login successful", loginResponse)
-	// resp.Headers["Set-Cookie"] = "token=" + token + "; HttpOnly; Path=/api/; SameSite=Strict"
+	logoutResponse := dtos.LogoutResponse{}
+	resp := utils.BuildResponse(http.StatusOK, "logout successful", logoutResponse)
+	// resp.Headers["Set-Cookie"] = "token=; HttpOnly; Path=/api/; Max-Age=0; SameSite=Strict"
 	return resp, nil
 }
 
 func main() {
-	lambda.Start(middleware.WithCors(handler))
+	lambda.Start(middleware.WithCors(authMiddleware.WithToken(handler)))
 }

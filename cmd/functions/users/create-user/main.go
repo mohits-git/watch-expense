@@ -73,5 +73,5 @@ func handler(ctx context.Context, event events.APIGatewayProxyRequest) (events.A
 }
 
 func main() {
-	lambda.Start(authMiddleware.Authenticated(handler))
+	lambda.Start(middleware.WithCors(authMiddleware.Authenticated(handler)))
 }

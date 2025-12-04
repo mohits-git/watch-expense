@@ -109,6 +109,21 @@ Resources:
                     - WatchExpenseTable
                     - Arn
 
+  Health:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      FunctionName: WatchExpense_Health
+      CodeUri: ./cmd/functions/health
+      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Method: get
+            Path: /health
+            RestApiId: !Ref WatchExpenseAPI
   Login:
     Type: AWS::Serverless::Function
     Metadata:
@@ -123,6 +138,36 @@ Resources:
           Properties:
             Method: post
             Path: /api/auth/login
+            RestApiId: !Ref WatchExpenseAPI
+  AuthMe:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      FunctionName: WatchExpense_Auth_Me
+      CodeUri: ./cmd/functions/auth/me
+      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Method: get
+            Path: /api/auth/me
+            RestApiId: !Ref WatchExpenseAPI
+  Logout:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      FunctionName: WatchExpense_Auth_Logout
+      CodeUri: ./cmd/functions/auth/logout
+      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Method: post
+            Path: /api/auth/logout
             RestApiId: !Ref WatchExpenseAPI
   GetAllUsers:
     Type: AWS::Serverless::Function
@@ -198,6 +243,321 @@ Resources:
           Properties:
             Method: delete
             Path: /api/users/{id}
+            RestApiId: !Ref WatchExpenseAPI
+  GetUserBudget:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      FunctionName: WatchExpense_Users_GetUserBudget
+      CodeUri: ./cmd/functions/users/get-user-budget
+      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Method: get
+            Path: /api/users/budget
+            RestApiId: !Ref WatchExpenseAPI
+  GetAllProjects:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      FunctionName: WatchExpense_Projects_GetAllProjects
+      CodeUri: ./cmd/functions/projects/get-all-projects
+      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Method: get
+            Path: /api/admin/projects
+            RestApiId: !Ref WatchExpenseAPI
+  GetProjectById:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      FunctionName: WatchExpense_Projects_GetProjectById
+      CodeUri: ./cmd/functions/projects/get-project-by-id
+      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Method: get
+            Path: /api/admin/projects/{id}
+            RestApiId: !Ref WatchExpenseAPI
+  CreateProject:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      FunctionName: WatchExpense_Projects_CreateProject
+      CodeUri: ./cmd/functions/projects/create-project
+      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Method: post
+            Path: /api/admin/projects
+            RestApiId: !Ref WatchExpenseAPI
+  UpdateProject:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      FunctionName: WatchExpense_Projects_UpdateProject
+      CodeUri: ./cmd/functions/projects/update-project
+      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Method: post
+            Path: /api/admin/projects/{id}
+            RestApiId: !Ref WatchExpenseAPI
+  GetAllDepartments:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      FunctionName: WatchExpense_Departments_GetAllDepartments
+      CodeUri: ./cmd/functions/departments/get-all-departments
+      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Method: get
+            Path: /api/admin/departments
+            RestApiId: !Ref WatchExpenseAPI
+  GetDepartmentById:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      FunctionName: WatchExpense_Departments_GetDepartmentById
+      CodeUri: ./cmd/functions/departments/get-department-by-id
+      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Method: get
+            Path: /api/admin/departments/{id}
+            RestApiId: !Ref WatchExpenseAPI
+  CreateDepartment:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      FunctionName: WatchExpense_Departments_CreateDepartment
+      CodeUri: ./cmd/functions/departments/create-department
+      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Method: post
+            Path: /api/admin/departments
+            RestApiId: !Ref WatchExpenseAPI
+  UpdateDepartment:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      FunctionName: WatchExpense_Departments_UpdateDepartment
+      CodeUri: ./cmd/functions/departments/update-department
+      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Method: post
+            Path: /api/admin/departments/{id}
+            RestApiId: !Ref WatchExpenseAPI
+  GetAllExpenses:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      FunctionName: WatchExpense_Expenses_GetAllExpenses
+      CodeUri: ./cmd/functions/expenses/get-all-expenses
+      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Method: get
+            Path: /api/expenses
+            RestApiId: !Ref WatchExpenseAPI
+  GetExpenseById:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      FunctionName: WatchExpense_Expenses_GetExpenseById
+      CodeUri: ./cmd/functions/expenses/get-expense-by-id
+      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Method: get
+            Path: /api/expenses/{id}
+            RestApiId: !Ref WatchExpenseAPI
+  CreateExpense:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      FunctionName: WatchExpense_Expenses_CreateExpense
+      CodeUri: ./cmd/functions/expenses/create-expense
+      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Method: post
+            Path: /api/expenses
+            RestApiId: !Ref WatchExpenseAPI
+  UpdateExpense:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      FunctionName: WatchExpense_Expenses_UpdateExpense
+      CodeUri: ./cmd/functions/expenses/update-expense
+      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Method: post
+            Path: /api/expenses/{id}
+            RestApiId: !Ref WatchExpenseAPI
+  UpdateExpenseStatus:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      FunctionName: WatchExpense_Expenses_UpdateExpenseStatus
+      CodeUri: ./cmd/functions/expenses/update-expense-status
+      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Method: patch
+            Path: /api/expenses/{id}
+            RestApiId: !Ref WatchExpenseAPI
+  GetExpenseSummary:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      FunctionName: WatchExpense_Expenses_GetExpenseSummary
+      CodeUri: ./cmd/functions/expenses/get-expenses-summary
+      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Method: get
+            Path: /api/expenses/summary
+            RestApiId: !Ref WatchExpenseAPI
+  GetAllAdvances:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      FunctionName: WatchExpense_Advances_GetAllAdvances
+      CodeUri: ./cmd/functions/advances/get-all-advances
+      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Method: get
+            Path: /api/advance-request
+            RestApiId: !Ref WatchExpenseAPI
+  GetAdvanceById:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      FunctionName: WatchExpense_Advances_GetAdvanceById
+      CodeUri: ./cmd/functions/advances/get-advance-by-id
+      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Method: get
+            Path: /api/advance-request/{id}
+            RestApiId: !Ref WatchExpenseAPI
+  CreateAdvance:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      FunctionName: WatchExpense_Advances_CreateAdvance
+      CodeUri: ./cmd/functions/advances/create-advance
+      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Method: post
+            Path: /api/advance-request
+            RestApiId: !Ref WatchExpenseAPI
+  UpdateAdvance:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      FunctionName: WatchExpense_Advances_UpdateAdvance
+      CodeUri: ./cmd/functions/advances/update-advance
+      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Method: post
+            Path: /api/advance-request/{id}
+            RestApiId: !Ref WatchExpenseAPI
+  UpdateAdvanceStatus:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      FunctionName: WatchExpense_Advances_UpdateAdvanceStatus
+      CodeUri: ./cmd/functions/advances/update-advance-status
+      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Method: patch
+            Path: /api/advance-request/{id}
+            RestApiId: !Ref WatchExpenseAPI
+  GetAdvanceSummary:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      FunctionName: WatchExpense_Advances_GetAdvanceSummary
+      CodeUri: ./cmd/functions/advances/get-advances-summary
+      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Method: get
+            Path: /api/advance-request/summary
             RestApiId: !Ref WatchExpenseAPI
 
 Outputs:

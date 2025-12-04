@@ -18,7 +18,8 @@ import (
 )
 
 var (
-	authService services.AuthenticationService
+	userService    services.UserService
+	authMiddleware *middleware.AuthMiddleware
 )
 
 func init() {
@@ -32,6 +33,7 @@ func init() {
 	}
 
 	userRepo := dynamodb.NewUserRepository(ddbClient, cfg.DYNAMODB_TABLE)
+	projectRepo := dynamodb.NewProjectRepository(ddbClient, cfg.DYNAMODB_TABLE)
 	bcryptProvider := bcrypt.NewBcryptPasswordHasher(12)
 	tokenProvider := jwttoken.NewJWTService(
 		cfg.JWT_SECRET,
@@ -39,32 +41,24 @@ func init() {
 		cfg.JWT_AUDIENCE,
 	)
 
-	authService = services.NewAuthenticationService(userRepo, tokenProvider, bcryptProvider)
+	userService = services.NewUserService(userRepo, projectRepo, bcryptProvider)
+	authMiddleware = middleware.NewAuthMiddleware(tokenProvider)
 }
 
 func handler(ctx context.Context, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	loginRequest, err := utils.DecodeJson[dtos.LoginRequest](event.Body)
+	budget, err := userService.GetUserBudget(ctx)
 	if err != nil {
-		return utils.BuildErrorResponse(http.StatusBadRequest, "invalid request"), nil
-	}
-
-	token, err := authService.Login(ctx, loginRequest.Email, loginRequest.Password)
-	if err != nil {
-		if apperr.IsNotFoundError(err) || apperr.IsUnauthorizedError(err) {
-			return utils.BuildErrorResponse(http.StatusUnauthorized, "invalid email or password"), nil
+		if apperr.IsNotFoundError(err) {
+			return utils.BuildErrorResponse(http.StatusNotFound, "user not found"), nil
 		} else if apperr.IsInvalidError(err) {
-			return utils.BuildErrorResponse(http.StatusBadRequest, "invalid inputs"), nil
+			return utils.BuildErrorResponse(http.StatusBadRequest, "invalid user ID"), nil
 		} else {
-			return utils.BuildErrorResponse(http.StatusInternalServerError, "internal server error"), nil
+			return utils.HandleDefaultErrors(err), nil
 		}
 	}
-
-	loginResponse := dtos.LoginResponse{Token: token}
-	resp := utils.BuildResponse(http.StatusOK, "login successful", loginResponse)
-	// resp.Headers["Set-Cookie"] = "token=" + token + "; HttpOnly; Path=/api/; SameSite=Strict"
-	return resp, nil
+	return utils.BuildResponse(http.StatusOK, "user budget fetched successfully", dtos.GetUserBudgetResponse{Budget: budget}), nil
 }
 
 func main() {
-	lambda.Start(middleware.WithCors(handler))
+	lambda.Start(middleware.WithCors(authMiddleware.Authenticated(handler)))
 }

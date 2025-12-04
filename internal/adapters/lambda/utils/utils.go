@@ -50,7 +50,7 @@ func GetBearerToken(event events.APIGatewayProxyRequest) string {
 	return ""
 }
 
-type LambdaHanlderFunction = func(ctx context.Context, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error)
+type LambdaHandlerFunction = func(ctx context.Context, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error)
 
 func HandleDefaultErrors(err error) events.APIGatewayProxyResponse {
 	switch {

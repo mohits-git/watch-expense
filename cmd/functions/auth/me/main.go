@@ -18,7 +18,8 @@ import (
 )
 
 var (
-	authService services.AuthenticationService
+	authService    services.AuthenticationService
+	authMiddleware *middleware.AuthMiddleware
 )
 
 func init() {
@@ -40,31 +41,22 @@ func init() {
 	)
 
 	authService = services.NewAuthenticationService(userRepo, tokenProvider, bcryptProvider)
+	authMiddleware = middleware.NewAuthMiddleware(tokenProvider)
 }
 
 func handler(ctx context.Context, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	loginRequest, err := utils.DecodeJson[dtos.LoginRequest](event.Body)
+	user, err := authService.GetCurrentUser(ctx)
 	if err != nil {
-		return utils.BuildErrorResponse(http.StatusBadRequest, "invalid request"), nil
-	}
-
-	token, err := authService.Login(ctx, loginRequest.Email, loginRequest.Password)
-	if err != nil {
-		if apperr.IsNotFoundError(err) || apperr.IsUnauthorizedError(err) {
-			return utils.BuildErrorResponse(http.StatusUnauthorized, "invalid email or password"), nil
-		} else if apperr.IsInvalidError(err) {
-			return utils.BuildErrorResponse(http.StatusBadRequest, "invalid inputs"), nil
+		if apperr.IsNotFoundError(err) {
+			return utils.BuildErrorResponse(http.StatusNotFound, "user not found"), nil
 		} else {
-			return utils.BuildErrorResponse(http.StatusInternalServerError, "internal server error"), nil
+			return utils.HandleDefaultErrors(err), nil
 		}
 	}
-
-	loginResponse := dtos.LoginResponse{Token: token}
-	resp := utils.BuildResponse(http.StatusOK, "login successful", loginResponse)
-	// resp.Headers["Set-Cookie"] = "token=" + token + "; HttpOnly; Path=/api/; SameSite=Strict"
-	return resp, nil
+	userResponse := dtos.ToUserDTO(user)
+	return utils.BuildResponse(http.StatusOK, "user details fetched successfully", userResponse), nil
 }
 
 func main() {
-	lambda.Start(middleware.WithCors(handler))
+	lambda.Start(middleware.WithCors(authMiddleware.Authenticated(handler)))
 }

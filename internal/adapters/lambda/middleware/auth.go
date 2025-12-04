@@ -20,8 +20,8 @@ func NewAuthMiddleware(tokenProvider ports.TokenProvider) *AuthMiddleware {
 	}
 }
 
-func (m *AuthMiddleware) Authenticated(handler utils.LambdaHanlderFunction) utils.LambdaHanlderFunction {
-	return utils.LambdaHanlderFunction(func(ctx context.Context, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func (m *AuthMiddleware) Authenticated(handler utils.LambdaHandlerFunction) utils.LambdaHandlerFunction {
+	return utils.LambdaHandlerFunction(func(ctx context.Context, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 		token := utils.GetBearerToken(event)
 		if token == "" {
 			return utils.BuildErrorResponse(http.StatusUnauthorized, "missing or invalid token"), nil
@@ -33,7 +33,24 @@ func (m *AuthMiddleware) Authenticated(handler utils.LambdaHanlderFunction) util
 			return utils.BuildErrorResponse(http.StatusUnauthorized, "invalid token"), nil
 		}
 
-		authctx := authctx.WithUserClaims(ctx, &userClaims)
-		return handler(authctx, event)
+		userctx := authctx.WithUserClaims(ctx, &userClaims)
+		return handler(userctx, event)
+	})
+}
+
+func (m *AuthMiddleware) WithToken(handler utils.LambdaHandlerFunction) utils.LambdaHandlerFunction {
+	return utils.LambdaHandlerFunction(func(ctx context.Context, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+		token := utils.GetBearerToken(event)
+		if token == "" {
+			return utils.BuildErrorResponse(http.StatusUnauthorized, "missing or invalid token"), nil
+		}
+
+		_, err := m.tokenProvider.ValidateToken(token)
+		if err != nil {
+			return utils.BuildErrorResponse(http.StatusUnauthorized, "invalid token"), nil
+		}
+
+		tokenctx := authctx.WithToken(ctx, token)
+		return handler(tokenctx, event)
 	})
 }

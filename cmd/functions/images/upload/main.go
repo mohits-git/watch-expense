@@ -1,0 +1,78 @@
+package main
+
+import (
+	"bytes"
+	"context"
+	"encoding/base64"
+	"io"
+	"mime"
+	"mime/multipart"
+	"net/http"
+
+	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/mohits-git/watch-expense/internal/adapters/http/dtos"
+	"github.com/mohits-git/watch-expense/internal/adapters/imageupload"
+	cfg "github.com/mohits-git/watch-expense/internal/adapters/lambda/config"
+	"github.com/mohits-git/watch-expense/internal/adapters/lambda/middleware"
+	"github.com/mohits-git/watch-expense/internal/adapters/lambda/utils"
+	"github.com/mohits-git/watch-expense/internal/ports"
+	"github.com/mohits-git/watch-expense/internal/utils/apperr"
+)
+
+var (
+	imageUploadService ports.ImageUploadService
+)
+
+func init() {
+	ctx := context.Background()
+
+	cfg := cfg.LoadConfig()
+
+	imageService, err := imageupload.NewS3ImageUpload(ctx, cfg.S3_BUCKET_NAME)
+	if err != nil {
+		panic(err)
+	}
+
+	imageUploadService = imageService
+}
+
+func handler(ctx context.Context, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	decodedBody, err := base64.StdEncoding.DecodeString(event.Body)
+	if err != nil {
+		return utils.BuildErrorResponse(http.StatusInternalServerError, "internal server error"), nil
+	}
+
+	contentType := event.Headers["Content-Type"]
+	_, params, err := mime.ParseMediaType(contentType)
+	if err != nil {
+		return utils.BuildErrorResponse(http.StatusInternalServerError, "internal server error"), nil
+	}
+	boundary := params["boundary"]
+
+	reader := multipart.NewReader(bytes.NewReader(decodedBody), boundary)
+
+	file, err := reader.NextPart()
+	if err != nil && err != io.EOF {
+		return utils.BuildErrorResponse(http.StatusInternalServerError, "internal server error"), nil
+	}
+	fileName := file.FileName()
+	if fileName == "" {
+		return utils.BuildErrorResponse(http.StatusBadRequest, "invalid data"), nil
+	}
+	defer file.Close()
+
+	url, err := imageUploadService.UploadImage(ctx, file, fileName)
+	if err != nil {
+		if apperr.IsTooLargeError(err) {
+			return utils.BuildErrorResponse(413, "File too large"), nil
+		}
+		return utils.BuildErrorResponse(http.StatusInternalServerError, "Something went wrong while uploading your image."), nil
+	}
+	response := dtos.ImageUploadResponse{ImageURL: url}
+	return utils.BuildResponse(http.StatusCreated, "Successfully uploaded image.", response), nil
+}
+
+func main() {
+	lambda.Start(middleware.WithCors(handler))
+}
