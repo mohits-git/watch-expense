@@ -48,8 +48,8 @@ func (s *projectService) CreateProject(ctx context.Context, project domain.Proje
 	}
 
 	project.ID = uuid.New().String()
-	project.CreatedAt = time.Now().Unix()
-	project.UpdatedAt = time.Now().Unix()
+	project.CreatedAt = time.Now().UnixMilli()
+	project.UpdatedAt = time.Now().UnixMilli()
 
 	return s.projectRepo.SaveProject(ctx, project)
 }
@@ -94,7 +94,7 @@ func (s *projectService) UpdateProject(ctx context.Context, project domain.Proje
 		return err
 	}
 
-	project.UpdatedAt = time.Now().Unix()
+	project.UpdatedAt = time.Now().UnixMilli()
 	project.CreatedAt = existingProject.CreatedAt
 
 	return s.projectRepo.UpdateProject(ctx, project)

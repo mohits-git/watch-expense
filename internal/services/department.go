@@ -44,8 +44,8 @@ func (s *departmentService) CreateDepartment(ctx context.Context, department dom
 	}
 
 	department.ID = uuid.New().String()
-	department.CreatedAt = time.Now().Unix()
-	department.UpdatedAt = time.Now().Unix()
+	department.CreatedAt = time.Now().UnixMilli()
+	department.UpdatedAt = time.Now().UnixMilli()
 
 	return s.departmentRepo.SaveDepartment(ctx, department)
 }
@@ -86,7 +86,7 @@ func (s *departmentService) UpdateDepartment(ctx context.Context, department dom
 		return err
 	}
 
-	department.UpdatedAt = time.Now().Unix()
+	department.UpdatedAt = time.Now().UnixMilli()
 	department.CreatedAt = existingDepartment.CreatedAt
 
 	return s.departmentRepo.UpdateDepartment(ctx, department)

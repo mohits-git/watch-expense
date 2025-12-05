@@ -51,8 +51,8 @@ func (s *expenseService) CreateExpense(ctx context.Context, expense domain.Expen
 	}
 
 	expense.ID = uuid.New().String()
-	expense.CreatedAt = time.Now().Unix()
-	expense.UpdatedAt = time.Now().Unix()
+	expense.CreatedAt = time.Now().UnixMilli()
+	expense.UpdatedAt = time.Now().UnixMilli()
 
 	for i := range expense.Bills {
 		expense.Bills[i].ID = uuid.New().String()
@@ -96,7 +96,7 @@ func (s *expenseService) UpdateExpense(ctx context.Context, expense domain.Expen
 		return apperr.NewAppError(apperr.ErrInvalid, "invalid expense data", nil)
 	}
 
-	expense.UpdatedAt = time.Now().Unix()
+	expense.UpdatedAt = time.Now().UnixMilli()
 	expense.CreatedAt = existingExpense.CreatedAt
 	expense.ApprovedAt = existingExpense.ApprovedAt
 	expense.ApprovedBy = existingExpense.ApprovedBy
@@ -135,15 +135,15 @@ func (s *expenseService) UpdateExpenseStatus(ctx context.Context, expenseID stri
 
 	if status == domain.Approved {
 		expense.ApprovedBy = reviewerID
-		expense.ApprovedAt = time.Now().Unix()
+		expense.ApprovedAt = time.Now().UnixMilli()
 	}
 
 	if status == domain.Reviewed {
 		expense.ReviewedBy = reviewerID
-		expense.ReviewedAt = time.Now().Unix()
+		expense.ReviewedAt = time.Now().UnixMilli()
 	}
 
-	expense.UpdatedAt = time.Now().Unix()
+	expense.UpdatedAt = time.Now().UnixMilli()
 
 	return s.expenseRepo.UpdateExpense(ctx, expense)
 }

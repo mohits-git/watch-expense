@@ -51,8 +51,8 @@ func (s *advanceService) CreateAdvance(ctx context.Context, advance domain.Advan
 	}
 
 	advance.ID = uuid.New().String()
-	advance.CreatedAt = time.Now().Unix()
-	advance.UpdatedAt = time.Now().Unix()
+	advance.CreatedAt = time.Now().UnixMilli()
+	advance.UpdatedAt = time.Now().UnixMilli()
 
 	return s.advanceRepo.SaveAdvance(ctx, advance)
 }
@@ -87,7 +87,7 @@ func (s *advanceService) UpdateAdvance(ctx context.Context, advance domain.Advan
 	advance.Status = domain.Pending
 	advance.UserID = claims.UserID
 
-	advance.UpdatedAt = time.Now().Unix()
+	advance.UpdatedAt = time.Now().UnixMilli()
 	advance.CreatedAt = existingAdvance.CreatedAt
 	advance.ApprovedBy = existingAdvance.ApprovedBy
 	advance.ApprovedAt = existingAdvance.ApprovedAt
@@ -126,15 +126,15 @@ func (s *advanceService) UpdateAdvanceStatus(ctx context.Context, advanceID stri
 
 	if status == domain.Approved {
 		advance.ApprovedBy = reviewerID
-		advance.ApprovedAt = time.Now().Unix()
+		advance.ApprovedAt = time.Now().UnixMilli()
 	}
 
 	if status == domain.Reviewed {
 		advance.ReviewedBy = reviewerID
-		advance.ReviewedAt = time.Now().Unix()
+		advance.ReviewedAt = time.Now().UnixMilli()
 	}
 
-	advance.UpdatedAt = time.Now().Unix()
+	advance.UpdatedAt = time.Now().UnixMilli()
 
 	return s.advanceRepo.UpdateAdvance(ctx, advance)
 }

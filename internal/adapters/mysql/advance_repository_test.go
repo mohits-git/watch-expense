@@ -240,8 +240,8 @@ func Test_mysql_AdvanceRepository_UpdateAdvance(t *testing.T) {
 }
 
 func Test_mysql_AdvanceRepository_FindAdvanceById(t *testing.T) {
-	now := time.Now().Unix()
-	approvedAt := time.Now().Unix()
+	now := time.Now().UnixMilli()
+	approvedAt := time.Now().UnixMilli()
 
 	tests := []struct {
 		name      string
