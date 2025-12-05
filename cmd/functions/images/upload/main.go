@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"context"
-	"encoding/base64"
 	"io"
 	"mime"
 	"mime/multipart"
@@ -38,19 +37,22 @@ func init() {
 }
 
 func handler(ctx context.Context, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	decodedBody, err := base64.StdEncoding.DecodeString(event.Body)
+	decodedBody, err := utils.DecodeBase64(event.Body)
 	if err != nil {
 		return utils.BuildErrorResponse(http.StatusInternalServerError, "internal server error"), nil
 	}
 
 	contentType := event.Headers["Content-Type"]
+  if contentType == "" {
+    contentType = event.Headers["content-type"]
+  }
 	_, params, err := mime.ParseMediaType(contentType)
 	if err != nil {
 		return utils.BuildErrorResponse(http.StatusInternalServerError, "internal server error"), nil
 	}
 	boundary := params["boundary"]
 
-	reader := multipart.NewReader(bytes.NewReader(decodedBody), boundary)
+	reader := multipart.NewReader(bytes.NewReader([]byte(decodedBody)), boundary)
 
 	file, err := reader.NextPart()
 	if err != nil && err != io.EOF {

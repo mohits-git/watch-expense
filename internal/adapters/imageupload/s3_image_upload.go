@@ -90,7 +90,7 @@ func (s3IU *S3ImageUpload) DeleteImage(ctx context.Context, imageUrl string) err
 	err = s3.NewObjectNotExistsWaiter(s3IU.client).Wait(
 		ctx,
 		&s3.HeadObjectInput{Bucket: aws.String(s3IU.bucket), Key: aws.String(objectKey)},
-		time.Minute,
+		10*time.Second,
 	)
 	if err != nil {
 		return apperr.NewAppError(apperr.ErrInternal, "failed to confirm image deletion", err)

@@ -2,6 +2,7 @@ package utils
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"net/http"
 
@@ -62,4 +63,12 @@ func HandleDefaultErrors(err error) events.APIGatewayProxyResponse {
 		return BuildErrorResponse(http.StatusInternalServerError, "internal server error")
 	}
 	return BuildErrorResponse(http.StatusInternalServerError, "internal server error")
+}
+
+func DecodeBase64(encodedStr string) (string, error) {
+	decodedBody, err := base64.StdEncoding.DecodeString(encodedStr)
+	if err != nil {
+		return "", apperr.NewAppError(apperr.ErrInvalid, "failed to decode base64 string", err)
+	}
+	return string(decodedBody), nil
 }

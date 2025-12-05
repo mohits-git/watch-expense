@@ -11,32 +11,6 @@ Globals:
       - x86_64
 
 Resources:
-  WatchExpensePublicBucket:
-    Type: 'AWS::S3::Bucket'
-    Properties:
-      BucketName: watch-expense-bucket
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: false
-        BlockPublicPolicy: false
-        IgnorePublicAcls: false
-        RestrictPublicBuckets: false
-  WatchExpensePublicBucketPolicy:
-    Type: 'AWS::S3::BucketPolicy'
-    Properties:
-      Bucket: !Ref WatchExpensePublicBucket
-      PolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal: '*'
-            Action: 's3:GetObject'
-            Resource:
-              Fn::Join:
-                - ''
-                - - 'arn:aws:s3:::'
-                  - Ref: 'WatchExpensePublicBucket'
-                  - '/*'
-
   WatchExpenseTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -77,21 +51,6 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       Policies:
-        - PolicyName: WatchExpenseS3AccessPolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - 's3:PutObject'
-                  - 's3:GetObject'
-                  - 's3:DeleteObject'
-                Resource:
-                  Fn::Join:
-                    - ''
-                    - - 'arn:aws:s3:::'
-                      - Ref: 'WatchExpensePublicBucket'
-                      - '/*'
         - PolicyName: WatchExpenseDynamoDBAccessPolicy
           PolicyDocument:
             Version: '2012-10-17'
@@ -559,6 +518,103 @@ Resources:
             Method: get
             Path: /api/advance-request/summary
             RestApiId: !Ref WatchExpenseAPI
+
+  WatchExpensePublicBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: watch-expense-bucket
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+  WatchExpensePublicBucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref WatchExpensePublicBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: '*'
+            Action: 's3:GetObject'
+            Resource:
+              Fn::Join:
+                - ''
+                - - 'arn:aws:s3:::'
+                  - Ref: 'WatchExpensePublicBucket'
+                  - '/*'
+
+  WatchExpenseImageUploadAPI:
+    Type: 'AWS::Serverless::Api'
+    Properties:
+      StageName: dev
+      Cors:
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS,PATCH'"
+        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+        AllowOrigin: "'*'"
+      BinaryMediaTypes:
+        - "multipart/form-data"
+
+  WatchExpenseS3LambdaExecutionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: WatchExpenseS3AccessPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 's3:PutObject'
+                  - 's3:GetObject'
+                  - 's3:DeleteObject'
+                Resource:
+                  Fn::Join:
+                    - ''
+                    - - 'arn:aws:s3:::'
+                      - Ref: 'WatchExpensePublicBucket'
+                      - '/*'
+
+  UploadImage:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      FunctionName: WatchExpense_Images_UploadImage
+      CodeUri: ./cmd/functions/images/upload
+      Role: !GetAtt WatchExpenseS3LambdaExecutionRole.Arn
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Method: post
+            Path: /api/images
+            RestApiId: !Ref WatchExpenseImageUploadAPI
+  DeleteImage:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      FunctionName: WatchExpense_Images_DeleteImage
+      CodeUri: ./cmd/functions/images/delete
+      Role: !GetAtt WatchExpenseS3LambdaExecutionRole.Arn
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Method: delete
+            Path: /api/images
+            RestApiId: !Ref WatchExpenseImageUploadAPI
 
 Outputs:
   WatchExpensePublicBucketName:
