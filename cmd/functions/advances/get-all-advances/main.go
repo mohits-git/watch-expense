@@ -47,7 +47,7 @@ func parseAdvancesFilterOptions(event events.APIGatewayProxyRequest) (domain.Adv
 	var err error
 	status := event.QueryStringParameters["status"]
 	pageStr := event.QueryStringParameters["page"]
-	page := 0
+	page := 1
 	limitStr := event.QueryStringParameters["limit"]
 	limit := 10
 	userID := event.QueryStringParameters["user_id"]

@@ -50,7 +50,7 @@ func (repo *ProjectRepository) SaveProject(ctx context.Context, project domain.P
 						"Budget":       &types.AttributeValueMemberN{Value: fmt.Sprintf("%v", project.Budget)},
 						"StartDate":    &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", project.StartDate)},
 						"EndDate":      &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", project.EndDate)},
-						"DepartmentID": &types.AttributeValueMemberN{Value: project.DepartmentID},
+						"DepartmentID": &types.AttributeValueMemberS{Value: project.DepartmentID},
 						"CreatedAt":    &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", project.CreatedAt)},
 						"UpdatedAt":    &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", project.UpdatedAt)},
 					},

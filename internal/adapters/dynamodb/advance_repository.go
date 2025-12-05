@@ -160,7 +160,7 @@ func (repo *AdvanceRepository) FindAllAdvances(ctx context.Context, filterOption
 		ctx,
 		repo.client,
 		queryInput,
-		filterOptions.Page,
+		filterOptions.Page-1,
 		filterOptions.Limit,
 	)
 	if err != nil {

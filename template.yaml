@@ -316,7 +316,7 @@ Resources:
         ApiEvent:
           Type: Api
           Properties:
-            Method: post
+            Method: put
             Path: /api/admin/projects/{id}
             RestApiId: !Ref WatchExpenseAPI
   GetAllDepartments:
@@ -376,7 +376,7 @@ Resources:
         ApiEvent:
           Type: Api
           Properties:
-            Method: post
+            Method: put
             Path: /api/admin/departments/{id}
             RestApiId: !Ref WatchExpenseAPI
   GetAllExpenses:
@@ -436,7 +436,7 @@ Resources:
         ApiEvent:
           Type: Api
           Properties:
-            Method: post
+            Method: put
             Path: /api/expenses/{id}
             RestApiId: !Ref WatchExpenseAPI
   UpdateExpenseStatus:
@@ -526,7 +526,7 @@ Resources:
         ApiEvent:
           Type: Api
           Properties:
-            Method: post
+            Method: put
             Path: /api/advance-request/{id}
             RestApiId: !Ref WatchExpenseAPI
   UpdateAdvanceStatus:
