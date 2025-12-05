@@ -16,8 +16,8 @@ import (
 )
 
 var (
-	advanceService services.AdvanceService
 	authMiddleware *middleware.AuthMiddleware
+	advanceService services.AdvanceService
 )
 
 func init() {

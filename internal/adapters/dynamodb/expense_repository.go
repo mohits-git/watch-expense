@@ -37,42 +37,60 @@ func (repo *ExpenseRepository) SaveExpense(ctx context.Context, expense domain.E
 		expense.UpdatedAt = expense.CreatedAt
 	}
 	bills := repo.getBillsAttributeValue(expense.Bills)
-	_, err := repo.client.TransactWriteItems(ctx, &dynamodb.TransactWriteItemsInput{
-		TransactItems: []types.TransactWriteItem{
-			{
-				Put: &types.Put{
-					TableName: aws.String(repo.tableName),
-					Item: map[string]types.AttributeValue{
-						"PK":           &types.AttributeValueMemberS{Value: "EXPENSE"},
-						"SK":           &types.AttributeValueMemberS{Value: fmt.Sprintf("DETAILS#%s#%s", expense.UserID, expense.ID)},
-						"ExpenseID":    &types.AttributeValueMemberS{Value: expense.ID},
-						"UserID":       &types.AttributeValueMemberS{Value: expense.UserID},
-						"Amount":       &types.AttributeValueMemberN{Value: fmt.Sprintf("%f", expense.Amount)},
-						"Purpose":      &types.AttributeValueMemberS{Value: expense.Purpose},
-						"Description":  &types.AttributeValueMemberS{Value: string(expense.Description)},
-						"Status":       &types.AttributeValueMemberS{Value: string(expense.Status)},
-						"IsReconciled": &types.AttributeValueMemberBOOL{Value: expense.IsReconciled},
-						"ApprovedBy":   &types.AttributeValueMemberS{Value: expense.ApprovedBy},
-						"ApprovedAt":   &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", expense.ApprovedAt)},
-						"ReviewedBy":   &types.AttributeValueMemberS{Value: expense.ReviewedBy},
-						"ReviewedAt":   &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", expense.ReviewedAt)},
-						"Bills":        bills,
-						"CreatedAt":    &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", expense.CreatedAt)},
-						"UpdatedAt":    &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", expense.UpdatedAt)},
-					},
-				},
-			},
-			{
-				Put: &types.Put{
-					TableName: aws.String(repo.tableName),
-					Item: map[string]types.AttributeValue{
-						"PK":     &types.AttributeValueMemberS{Value: "EXPENSE"},
-						"SK":     &types.AttributeValueMemberS{Value: fmt.Sprintf("USER#%s", expense.ID)},
-						"UserID": &types.AttributeValueMemberS{Value: expense.UserID},
-					},
+	transactionItems := []types.TransactWriteItem{
+		{
+			Put: &types.Put{
+				TableName: aws.String(repo.tableName),
+				Item: map[string]types.AttributeValue{
+					"PK":           &types.AttributeValueMemberS{Value: "EXPENSE"},
+					"SK":           &types.AttributeValueMemberS{Value: fmt.Sprintf("DETAILS#%s#%s", expense.UserID, expense.ID)},
+					"ExpenseID":    &types.AttributeValueMemberS{Value: expense.ID},
+					"UserID":       &types.AttributeValueMemberS{Value: expense.UserID},
+					"Amount":       &types.AttributeValueMemberN{Value: fmt.Sprintf("%f", expense.Amount)},
+					"Purpose":      &types.AttributeValueMemberS{Value: expense.Purpose},
+					"Description":  &types.AttributeValueMemberS{Value: string(expense.Description)},
+					"Status":       &types.AttributeValueMemberS{Value: string(expense.Status)},
+					"IsReconciled": &types.AttributeValueMemberBOOL{Value: expense.IsReconciled},
+					"ApprovedBy":   &types.AttributeValueMemberS{Value: expense.ApprovedBy},
+					"ApprovedAt":   &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", expense.ApprovedAt)},
+					"ReviewedBy":   &types.AttributeValueMemberS{Value: expense.ReviewedBy},
+					"ReviewedAt":   &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", expense.ReviewedAt)},
+					"Bills":        bills,
+					"CreatedAt":    &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", expense.CreatedAt)},
+					"UpdatedAt":    &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", expense.UpdatedAt)},
 				},
 			},
 		},
+		{
+			Put: &types.Put{
+				TableName: aws.String(repo.tableName),
+				Item: map[string]types.AttributeValue{
+					"PK":     &types.AttributeValueMemberS{Value: "EXPENSE"},
+					"SK":     &types.AttributeValueMemberS{Value: fmt.Sprintf("USER#%s", expense.ID)},
+					"UserID": &types.AttributeValueMemberS{Value: expense.UserID},
+				},
+			},
+		},
+	}
+
+	if expense.IsReconciled {
+		transactionItems = append(transactionItems, types.TransactWriteItem{
+			Update: &types.Update{
+				TableName: aws.String(repo.tableName),
+				Key: map[string]types.AttributeValue{
+					"PK": &types.AttributeValueMemberS{Value: "ADVANCE"},
+					"SK": &types.AttributeValueMemberS{Value: fmt.Sprintf("DETAILS#%s#%s", expense.UserID, expense.AdvanceID)},
+				},
+				UpdateExpression: aws.String("SET ReconciledExpenseID = :expenseId"),
+				ExpressionAttributeValues: map[string]types.AttributeValue{
+					":expenseId": &types.AttributeValueMemberS{Value: expense.ID},
+				},
+			},
+		})
+	}
+
+	_, err := repo.client.TransactWriteItems(ctx, &dynamodb.TransactWriteItemsInput{
+		TransactItems: transactionItems,
 	})
 	if err != nil {
 		return "", apperr.NewAppError(apperr.ErrInternal, "Error saving expense to dynamodb", err)
@@ -194,20 +212,25 @@ func (repo *ExpenseRepository) FindAllExpenses(ctx context.Context, filterOption
 }
 
 func (repo *ExpenseRepository) GetExpenseSumByStatus(ctx context.Context, userID string, status domain.RequestStatus) (float64, error) {
-	result, err := repo.client.Query(ctx, &dynamodb.QueryInput{
+	queryInput := &dynamodb.QueryInput{
 		TableName:              aws.String(repo.tableName),
 		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :sk)"),
-		FilterExpression:       aws.String("#status = :status"),
 		ProjectionExpression:   aws.String("Amount"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":pk":     &types.AttributeValueMemberS{Value: "EXPENSE"},
-			":sk":     &types.AttributeValueMemberS{Value: fmt.Sprintf("DETAILS#%s", userID)},
-			":status": &types.AttributeValueMemberS{Value: string(status)},
+			":pk": &types.AttributeValueMemberS{Value: "EXPENSE"},
+			":sk": &types.AttributeValueMemberS{Value: fmt.Sprintf("DETAILS#%s", userID)},
 		},
-		ExpressionAttributeNames: map[string]string{
+	}
+
+	if status != "" {
+		queryInput.FilterExpression = aws.String("#status = :status")
+		queryInput.ExpressionAttributeNames = map[string]string{
 			"#status": "Status",
-		},
-	})
+		}
+		queryInput.ExpressionAttributeValues[":status"] = &types.AttributeValueMemberS{Value: string(status)}
+	}
+
+	result, err := repo.client.Query(ctx, queryInput)
 	if err != nil {
 		return 0, apperr.NewAppError(apperr.ErrInternal, "Error fetching expense from dynamodb", err)
 	}

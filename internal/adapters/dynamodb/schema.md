@@ -70,7 +70,7 @@
   ------------------------------------------------------------*/
   {
     "PK": "ADVANCE",
-    "SK": "UserID#AdvanceID",
+    "SK": "Details#UserID#AdvanceID",
     "AdvanceID": "uuid",
     "UserID": "uuid",
     "Amount": "decimal",

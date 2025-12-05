@@ -190,20 +190,25 @@ func (repo *AdvanceRepository) FindAllAdvances(ctx context.Context, filterOption
 }
 
 func (repo *AdvanceRepository) GetAdvanceSumByStatus(ctx context.Context, userID string, status domain.RequestStatus) (float64, error) {
-	result, err := repo.client.Query(ctx, &dynamodb.QueryInput{
+	queryInput := &dynamodb.QueryInput{
 		TableName:              aws.String(repo.tableName),
 		KeyConditionExpression: aws.String("PK = :pk AND begins_with(SK, :sk)"),
-		FilterExpression:       aws.String("#status = :status"),
 		ProjectionExpression:   aws.String("Amount"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":pk":     &types.AttributeValueMemberS{Value: "ADVANCE"},
-			":sk":     &types.AttributeValueMemberS{Value: fmt.Sprintf("DETAILS#%s", userID)},
-			":status": &types.AttributeValueMemberS{Value: string(status)},
+			":pk": &types.AttributeValueMemberS{Value: "ADVANCE"},
+			":sk": &types.AttributeValueMemberS{Value: fmt.Sprintf("DETAILS#%s", userID)},
 		},
-		ExpressionAttributeNames: map[string]string{
+	}
+
+	if status != "" {
+		queryInput.FilterExpression = aws.String("#status = :status")
+		queryInput.ExpressionAttributeNames = map[string]string{
 			"#status": "Status",
-		},
-	})
+		}
+		queryInput.ExpressionAttributeValues[":status"] = &types.AttributeValueMemberS{Value: string(status)}
+	}
+
+	result, err := repo.client.Query(ctx, queryInput)
 	if err != nil {
 		return 0, apperr.NewAppError(apperr.ErrInternal, "Error fetching advance from dynamodb", err)
 	}

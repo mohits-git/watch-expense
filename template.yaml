@@ -32,6 +32,7 @@ Resources:
   WatchExpenseAPI:
     Type: 'AWS::Serverless::Api'
     Properties:
+      Name: WatchExpense_API
       StageName: dev
       Cors:
         AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS,PATCH'"
@@ -548,6 +549,7 @@ Resources:
   WatchExpenseImageUploadAPI:
     Type: 'AWS::Serverless::Api'
     Properties:
+      Name: WatchExpense_ImageUpload_API
       StageName: dev
       Cors:
         AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS,PATCH'"
