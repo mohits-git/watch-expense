@@ -617,6 +617,21 @@ Resources:
             Method: delete
             Path: /api/images
             RestApiId: !Ref WatchExpenseImageUploadAPI
+  GetImageDownloadURL:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      FunctionName: WatchExpense_Images_GetImageDownloadURL
+      CodeUri: ./cmd/functions/images/get-download-url
+      Role: !GetAtt WatchExpenseS3LambdaExecutionRole.Arn
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Method: get
+            Path: /api/images/download-url
+            RestApiId: !Ref WatchExpenseImageUploadAPI
 
 Outputs:
   WatchExpensePublicBucketName:

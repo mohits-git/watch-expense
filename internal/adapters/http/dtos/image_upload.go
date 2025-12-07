@@ -7,3 +7,7 @@ type ImageUploadResponse struct {
 type DeleteImageRequest struct {
 	ImageURL string `json:"image_url"`
 }
+
+type ImageDownloadURLResponse struct {
+  DownloadURL string `json:"download_url"`
+}

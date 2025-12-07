@@ -8,9 +8,9 @@ import (
 	"github.com/mohits-git/watch-expense/internal/adapters/bcrypt"
 	"github.com/mohits-git/watch-expense/internal/adapters/http/handlers"
 	"github.com/mohits-git/watch-expense/internal/adapters/http/router"
-	"github.com/mohits-git/watch-expense/internal/adapters/imageupload"
 	"github.com/mohits-git/watch-expense/internal/adapters/jwttoken"
 	"github.com/mohits-git/watch-expense/internal/adapters/mysql"
+	"github.com/mohits-git/watch-expense/internal/adapters/s3imagestore"
 	"github.com/mohits-git/watch-expense/internal/services"
 )
 
@@ -32,12 +32,15 @@ func main() {
 		cfg.JWT_AUDIENCE,
 	)
 
+	imageStore, err := s3imagestore.NewS3ImageStore(ctx, cfg.S3_BUCKET_NAME)
+
 	// repositories
 	userRepo := mysql.NewUserRepository(db)
 	departmentRepo := mysql.NewDepartmentRepository(db)
 	projectRepo := mysql.NewProjectRepository(db)
 	expenseRepo := mysql.NewExpenseRepository(db)
 	advanceRepo := mysql.NewAdvanceRepository(db)
+	imageMetadataRepo := mysql.NewImageMetadataRepository(db)
 
 	// services
 	authService := services.NewAuthenticationService(userRepo, tokenProvider, bcryptProvider)
@@ -46,7 +49,7 @@ func main() {
 	projectService := services.NewProjectService(projectRepo)
 	expenseService := services.NewExpenseService(expenseRepo)
 	advanceService := services.NewAdvanceService(advanceRepo)
-	imageService, err := imageupload.NewS3ImageUpload(ctx, cfg.S3_BUCKET_NAME)
+	imageService := services.NewImageService(imageStore, imageMetadataRepo)
 	if err != nil {
 		log.Fatal("Error while creating s3 image upload service", err)
 	}

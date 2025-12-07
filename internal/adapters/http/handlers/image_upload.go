@@ -5,15 +5,15 @@ import (
 	"net/http"
 
 	"github.com/mohits-git/watch-expense/internal/adapters/http/dtos"
-	"github.com/mohits-git/watch-expense/internal/ports"
+	"github.com/mohits-git/watch-expense/internal/services"
 	"github.com/mohits-git/watch-expense/internal/utils/apperr"
 )
 
 type ImageUploadHandler struct {
-	imageUploadService ports.ImageUploadService
+	imageUploadService services.ImageService
 }
 
-func NewImageUploadHandler(service ports.ImageUploadService) *ImageUploadHandler {
+func NewImageUploadHandler(service services.ImageService) *ImageUploadHandler {
 	return &ImageUploadHandler{
 		imageUploadService: service,
 	}
@@ -29,7 +29,7 @@ func (h *ImageUploadHandler) HandleUploadImage(w http.ResponseWriter, r *http.Re
 	filename := header.Filename
 	defer file.Close()
 
-	url, err := h.imageUploadService.UploadImage(r.Context(), file, filename)
+	url, err := h.imageUploadService.UploadUserImage(r.Context(), file, filename)
 	if err != nil {
 		if apperr.IsTooLargeError(err) {
 			writeError(w, 413, "File too large")
@@ -50,7 +50,7 @@ func (h *ImageUploadHandler) HandleDeleteImage(w http.ResponseWriter, r *http.Re
 		return
 	}
 	url := deleteReq.ImageURL
-	err = h.imageUploadService.DeleteImage(r.Context(), url)
+	err = h.imageUploadService.DeleteUserImage(r.Context(), url)
 	if err != nil {
 		log.Println(err)
 		writeError(w, http.StatusInternalServerError, "Could not delete the image")

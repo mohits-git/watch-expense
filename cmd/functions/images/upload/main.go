@@ -10,17 +10,20 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/mohits-git/watch-expense/internal/adapters/dynamodb"
 	"github.com/mohits-git/watch-expense/internal/adapters/http/dtos"
-	"github.com/mohits-git/watch-expense/internal/adapters/imageupload"
+	"github.com/mohits-git/watch-expense/internal/adapters/jwttoken"
 	cfg "github.com/mohits-git/watch-expense/internal/adapters/lambda/config"
 	"github.com/mohits-git/watch-expense/internal/adapters/lambda/middleware"
 	"github.com/mohits-git/watch-expense/internal/adapters/lambda/utils"
-	"github.com/mohits-git/watch-expense/internal/ports"
+	"github.com/mohits-git/watch-expense/internal/adapters/s3imagestore"
+	"github.com/mohits-git/watch-expense/internal/services"
 	"github.com/mohits-git/watch-expense/internal/utils/apperr"
 )
 
 var (
-	imageUploadService ports.ImageUploadService
+	imageService   services.ImageService
+	authMiddleware *middleware.AuthMiddleware
 )
 
 func init() {
@@ -28,12 +31,25 @@ func init() {
 
 	cfg := cfg.LoadConfig()
 
-	imageService, err := imageupload.NewS3ImageUpload(ctx, cfg.S3_BUCKET_NAME)
+	s3ImageStore, err := s3imagestore.NewS3ImageStore(ctx, cfg.S3_BUCKET_NAME)
 	if err != nil {
 		panic(err)
 	}
 
-	imageUploadService = imageService
+	ddbclient, err := dynamodb.InitDynamoDBClient(ctx)
+	if err != nil {
+		panic(err)
+	}
+	imageMetadataRepo := dynamodb.NewImageMetadataRepository(ddbclient, cfg.DYNAMODB_TABLE)
+
+	tokenProvider := jwttoken.NewJWTService(
+		cfg.JWT_SECRET,
+		cfg.JWT_ISSUER,
+		cfg.JWT_AUDIENCE,
+	)
+
+	imageService = services.NewImageService(s3ImageStore, imageMetadataRepo)
+	authMiddleware = middleware.NewAuthMiddleware(tokenProvider)
 }
 
 func handler(ctx context.Context, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -43,9 +59,9 @@ func handler(ctx context.Context, event events.APIGatewayProxyRequest) (events.A
 	}
 
 	contentType := event.Headers["Content-Type"]
-  if contentType == "" {
-    contentType = event.Headers["content-type"]
-  }
+	if contentType == "" {
+		contentType = event.Headers["content-type"]
+	}
 	_, params, err := mime.ParseMediaType(contentType)
 	if err != nil {
 		return utils.BuildErrorResponse(http.StatusInternalServerError, "internal server error"), nil
@@ -64,7 +80,7 @@ func handler(ctx context.Context, event events.APIGatewayProxyRequest) (events.A
 	}
 	defer file.Close()
 
-	url, err := imageUploadService.UploadImage(ctx, file, fileName)
+	url, err := imageService.UploadUserImage(ctx, file, fileName)
 	if err != nil {
 		if apperr.IsTooLargeError(err) {
 			return utils.BuildErrorResponse(413, "File too large"), nil
@@ -76,5 +92,5 @@ func handler(ctx context.Context, event events.APIGatewayProxyRequest) (events.A
 }
 
 func main() {
-	lambda.Start(middleware.WithCors(handler))
+	lambda.Start(middleware.WithCors(authMiddleware.Authenticated(handler)))
 }
