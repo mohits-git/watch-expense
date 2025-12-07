@@ -76,6 +76,13 @@ CREATE TABLE IF NOT EXISTS advances (
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
+CREATE TABLE IF NOT EXISTS image_metadata (
+    id VARCHAR(36) PRIMARY KEY,
+    user_id VARCHAR(36) NOT NULL,
+    image_url VARCHAR(255) NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
 ALTER TABLE users
 ADD FOREIGN KEY (project_id) REFERENCES projects(id),
 ADD FOREIGN KEY (department_id) REFERENCES departments(id);

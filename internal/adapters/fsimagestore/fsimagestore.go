@@ -1,4 +1,4 @@
-package imageupload
+package fsimagestore
 
 import (
 	"context"
@@ -13,23 +13,23 @@ import (
 	"github.com/mohits-git/watch-expense/internal/ports"
 )
 
-type FSImageUpload struct {
+type FSImageStore struct {
 	baseUrl             string
 	fileUploadDirectory string
 }
 
-func NewFSImageUpload(baseUrl, fileUploadDirectory string) ports.ImageUploadService {
+func NewFSImageStore(baseUrl, fileUploadDirectory string) ports.ImageStore {
 	// create the directory if it doesn't exist
 	if err := os.MkdirAll(fileUploadDirectory, os.ModePerm); err != nil {
 		log.Fatalf("Failed to create directory: %v", err)
 	}
-	return &FSImageUpload{
+	return &FSImageStore{
 		baseUrl:             baseUrl,
 		fileUploadDirectory: fileUploadDirectory,
 	}
 }
 
-func (s *FSImageUpload) UploadImage(ctx context.Context, imageData io.Reader, name string) (string, error) {
+func (s *FSImageStore) UploadImage(ctx context.Context, imageData io.Reader, name string) (string, error) {
 	id := uuid.New().String() + "_" + name
 	filePath := filepath.Join(s.fileUploadDirectory, id)
 	log.Println(filePath)
@@ -51,7 +51,7 @@ func (s *FSImageUpload) UploadImage(ctx context.Context, imageData io.Reader, na
 	return imageUrl, nil
 }
 
-func (s *FSImageUpload) DeleteImage(ctx context.Context, imageUrl string) error {
+func (s *FSImageStore) DeleteImage(ctx context.Context, imageUrl string) error {
 	parsedUrl, err := url.Parse(imageUrl)
 	if err != nil {
 		return err
@@ -64,4 +64,9 @@ func (s *FSImageUpload) DeleteImage(ctx context.Context, imageUrl string) error 
 	}
 
 	return nil
+}
+
+func (s *FSImageStore) GetImageDownloadURL(ctx context.Context, imageUrl string) (string, error) {
+  // In a filesystem-based store, the upload URL is the same as the download URL
+  return imageUrl, nil
 }
