@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/mohits-git/watch-expense/internal/adapters/http/dtos"
@@ -52,7 +51,6 @@ func (h *ImageUploadHandler) HandleDeleteImage(w http.ResponseWriter, r *http.Re
 	url := deleteReq.ImageURL
 	err = h.imageUploadService.DeleteUserImage(r.Context(), url)
 	if err != nil {
-		log.Println(err)
 		writeError(w, http.StatusInternalServerError, "Could not delete the image")
 		return
 	}

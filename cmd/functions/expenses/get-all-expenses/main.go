@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -83,7 +82,6 @@ func handler(ctx context.Context, event events.APIGatewayProxyRequest) (events.A
 
 	expenses, total, err := expenseService.GetAllExpenses(ctx, filterOptions)
 	if err != nil {
-		log.Println("EXPENSE FETCH ALL ERROR:- ", err)
 		if apperr.IsInvalidError(err) {
 			return utils.BuildErrorResponse(http.StatusBadRequest, "invalid request parameters"), nil
 		}

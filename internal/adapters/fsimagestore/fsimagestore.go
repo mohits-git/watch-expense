@@ -32,7 +32,6 @@ func NewFSImageStore(baseUrl, fileUploadDirectory string) ports.ImageStore {
 func (s *FSImageStore) UploadImage(ctx context.Context, imageData io.Reader, name string) (string, error) {
 	id := uuid.New().String() + "_" + name
 	filePath := filepath.Join(s.fileUploadDirectory, id)
-	log.Println(filePath)
 	file, err := os.Create(filePath)
 	if err != nil {
 		return "", err

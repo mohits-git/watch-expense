@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"log"
 	"net/http"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -64,7 +63,6 @@ func handler(ctx context.Context, event events.APIGatewayProxyRequest) (events.A
 	url := deleteReq.ImageURL
 	err = imageService.DeleteUserImage(ctx, url)
 	if err != nil {
-		log.Println("image delete error: ", err)
 		return utils.BuildErrorResponse(http.StatusInternalServerError, "Could not delete the image"), nil
 	}
 	return utils.BuildResponse(http.StatusOK, "Successfully deleted image.", struct{}{}), nil
