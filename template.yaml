@@ -29,6 +29,27 @@ Resources:
         ReadCapacityUnits: 25
         WriteCapacityUnits: 25
 
+  WatchExpenseDynamoDBAccessPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: WatchExpense-DynamoDB-Access-Policy
+      Description: Provides read/write access to WatchExpense DynamoDB table
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'dynamodb:PutItem'
+              - 'dynamodb:GetItem'
+              - 'dynamodb:UpdateItem'
+              - 'dynamodb:DeleteItem'
+              - 'dynamodb:Query'
+              - 'dynamodb:Scan'
+            Resource:
+              Fn::GetAtt:
+                - WatchExpenseTable
+                - Arn
+
   WatchExpenseAPI:
     Type: 'AWS::Serverless::Api'
     Properties:
@@ -39,9 +60,10 @@ Resources:
         AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
         AllowOrigin: "'*'"
 
-  WatchExpenseLambdaExecutionRole:
+  WatchExpenseDynamoDBLambdaRole:
     Type: 'AWS::IAM::Role'
     Properties:
+      RoleName: WatchExpense-DynamoDB-Lambda-Role
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -51,23 +73,7 @@ Resources:
             Action: 'sts:AssumeRole'
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
-      Policies:
-        - PolicyName: WatchExpenseDynamoDBAccessPolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - 'dynamodb:PutItem'
-                  - 'dynamodb:GetItem'
-                  - 'dynamodb:UpdateItem'
-                  - 'dynamodb:DeleteItem'
-                  - 'dynamodb:Query'
-                  - 'dynamodb:Scan'
-                Resource:
-                  Fn::GetAtt:
-                    - WatchExpenseTable
-                    - Arn
+        - !Ref WatchExpenseDynamoDBAccessPolicy
 
   Health:
     Type: AWS::Serverless::Function
@@ -76,7 +82,6 @@ Resources:
     Properties:
       FunctionName: WatchExpense_Health
       CodeUri: ./cmd/functions/health
-      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
       Events:
         ApiEvent:
           Type: Api
@@ -91,7 +96,7 @@ Resources:
     Properties:
       FunctionName: WatchExpense_Auth_Login
       CodeUri: ./cmd/functions/auth/login
-      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Role: !GetAtt WatchExpenseDynamoDBLambdaRole.Arn
       Events:
         ApiEvent:
           Type: Api
@@ -106,7 +111,7 @@ Resources:
     Properties:
       FunctionName: WatchExpense_Auth_Me
       CodeUri: ./cmd/functions/auth/me
-      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Role: !GetAtt WatchExpenseDynamoDBLambdaRole.Arn
       Events:
         ApiEvent:
           Type: Api
@@ -121,7 +126,7 @@ Resources:
     Properties:
       FunctionName: WatchExpense_Auth_Logout
       CodeUri: ./cmd/functions/auth/logout
-      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Role: !GetAtt WatchExpenseDynamoDBLambdaRole.Arn
       Events:
         ApiEvent:
           Type: Api
@@ -136,7 +141,7 @@ Resources:
     Properties:
       FunctionName: WatchExpense_Users_GetAllUsers
       CodeUri: ./cmd/functions/users/get-all-users
-      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Role: !GetAtt WatchExpenseDynamoDBLambdaRole.Arn
       Events:
         ApiEvent:
           Type: Api
@@ -151,7 +156,7 @@ Resources:
     Properties:
       FunctionName: WatchExpense_Users_GetUserById
       CodeUri: ./cmd/functions/users/get-user-by-id
-      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Role: !GetAtt WatchExpenseDynamoDBLambdaRole.Arn
       Events:
         ApiEvent:
           Type: Api
@@ -166,7 +171,7 @@ Resources:
     Properties:
       FunctionName: WatchExpense_Users_CreateUser
       CodeUri: ./cmd/functions/users/create-user
-      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Role: !GetAtt WatchExpenseDynamoDBLambdaRole.Arn
       Events:
         ApiEvent:
           Type: Api
@@ -181,7 +186,7 @@ Resources:
     Properties:
       FunctionName: WatchExpense_Users_UpdateUser
       CodeUri: ./cmd/functions/users/update-user
-      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Role: !GetAtt WatchExpenseDynamoDBLambdaRole.Arn
       Events:
         ApiEvent:
           Type: Api
@@ -196,7 +201,7 @@ Resources:
     Properties:
       FunctionName: WatchExpense_Users_DeleteUser
       CodeUri: ./cmd/functions/users/delete-user
-      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Role: !GetAtt WatchExpenseDynamoDBLambdaRole.Arn
       Events:
         ApiEvent:
           Type: Api
@@ -211,7 +216,7 @@ Resources:
     Properties:
       FunctionName: WatchExpense_Users_GetUserBudget
       CodeUri: ./cmd/functions/users/get-user-budget
-      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Role: !GetAtt WatchExpenseDynamoDBLambdaRole.Arn
       Events:
         ApiEvent:
           Type: Api
@@ -226,7 +231,7 @@ Resources:
     Properties:
       FunctionName: WatchExpense_Projects_GetAllProjects
       CodeUri: ./cmd/functions/projects/get-all-projects
-      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Role: !GetAtt WatchExpenseDynamoDBLambdaRole.Arn
       Events:
         ApiEvent:
           Type: Api
@@ -241,7 +246,7 @@ Resources:
     Properties:
       FunctionName: WatchExpense_Projects_GetProjectById
       CodeUri: ./cmd/functions/projects/get-project-by-id
-      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Role: !GetAtt WatchExpenseDynamoDBLambdaRole.Arn
       Events:
         ApiEvent:
           Type: Api
@@ -256,7 +261,7 @@ Resources:
     Properties:
       FunctionName: WatchExpense_Projects_CreateProject
       CodeUri: ./cmd/functions/projects/create-project
-      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Role: !GetAtt WatchExpenseDynamoDBLambdaRole.Arn
       Events:
         ApiEvent:
           Type: Api
@@ -271,7 +276,7 @@ Resources:
     Properties:
       FunctionName: WatchExpense_Projects_UpdateProject
       CodeUri: ./cmd/functions/projects/update-project
-      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Role: !GetAtt WatchExpenseDynamoDBLambdaRole.Arn
       Events:
         ApiEvent:
           Type: Api
@@ -286,7 +291,7 @@ Resources:
     Properties:
       FunctionName: WatchExpense_Departments_GetAllDepartments
       CodeUri: ./cmd/functions/departments/get-all-departments
-      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Role: !GetAtt WatchExpenseDynamoDBLambdaRole.Arn
       Events:
         ApiEvent:
           Type: Api
@@ -301,7 +306,7 @@ Resources:
     Properties:
       FunctionName: WatchExpense_Departments_GetDepartmentById
       CodeUri: ./cmd/functions/departments/get-department-by-id
-      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Role: !GetAtt WatchExpenseDynamoDBLambdaRole.Arn
       Events:
         ApiEvent:
           Type: Api
@@ -316,7 +321,7 @@ Resources:
     Properties:
       FunctionName: WatchExpense_Departments_CreateDepartment
       CodeUri: ./cmd/functions/departments/create-department
-      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Role: !GetAtt WatchExpenseDynamoDBLambdaRole.Arn
       Events:
         ApiEvent:
           Type: Api
@@ -331,7 +336,7 @@ Resources:
     Properties:
       FunctionName: WatchExpense_Departments_UpdateDepartment
       CodeUri: ./cmd/functions/departments/update-department
-      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Role: !GetAtt WatchExpenseDynamoDBLambdaRole.Arn
       Events:
         ApiEvent:
           Type: Api
@@ -346,7 +351,7 @@ Resources:
     Properties:
       FunctionName: WatchExpense_Expenses_GetAllExpenses
       CodeUri: ./cmd/functions/expenses/get-all-expenses
-      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Role: !GetAtt WatchExpenseDynamoDBLambdaRole.Arn
       Events:
         ApiEvent:
           Type: Api
@@ -361,7 +366,7 @@ Resources:
     Properties:
       FunctionName: WatchExpense_Expenses_GetExpenseById
       CodeUri: ./cmd/functions/expenses/get-expense-by-id
-      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Role: !GetAtt WatchExpenseDynamoDBLambdaRole.Arn
       Events:
         ApiEvent:
           Type: Api
@@ -376,7 +381,7 @@ Resources:
     Properties:
       FunctionName: WatchExpense_Expenses_CreateExpense
       CodeUri: ./cmd/functions/expenses/create-expense
-      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Role: !GetAtt WatchExpenseDynamoDBLambdaRole.Arn
       Events:
         ApiEvent:
           Type: Api
@@ -391,7 +396,7 @@ Resources:
     Properties:
       FunctionName: WatchExpense_Expenses_UpdateExpense
       CodeUri: ./cmd/functions/expenses/update-expense
-      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Role: !GetAtt WatchExpenseDynamoDBLambdaRole.Arn
       Events:
         ApiEvent:
           Type: Api
@@ -406,7 +411,7 @@ Resources:
     Properties:
       FunctionName: WatchExpense_Expenses_UpdateExpenseStatus
       CodeUri: ./cmd/functions/expenses/update-expense-status
-      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Role: !GetAtt WatchExpenseDynamoDBLambdaRole.Arn
       Events:
         ApiEvent:
           Type: Api
@@ -421,7 +426,7 @@ Resources:
     Properties:
       FunctionName: WatchExpense_Expenses_GetExpenseSummary
       CodeUri: ./cmd/functions/expenses/get-expenses-summary
-      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Role: !GetAtt WatchExpenseDynamoDBLambdaRole.Arn
       Events:
         ApiEvent:
           Type: Api
@@ -436,7 +441,7 @@ Resources:
     Properties:
       FunctionName: WatchExpense_Advances_GetAllAdvances
       CodeUri: ./cmd/functions/advances/get-all-advances
-      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Role: !GetAtt WatchExpenseDynamoDBLambdaRole.Arn
       Events:
         ApiEvent:
           Type: Api
@@ -451,7 +456,7 @@ Resources:
     Properties:
       FunctionName: WatchExpense_Advances_GetAdvanceById
       CodeUri: ./cmd/functions/advances/get-advance-by-id
-      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Role: !GetAtt WatchExpenseDynamoDBLambdaRole.Arn
       Events:
         ApiEvent:
           Type: Api
@@ -466,7 +471,7 @@ Resources:
     Properties:
       FunctionName: WatchExpense_Advances_CreateAdvance
       CodeUri: ./cmd/functions/advances/create-advance
-      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Role: !GetAtt WatchExpenseDynamoDBLambdaRole.Arn
       Events:
         ApiEvent:
           Type: Api
@@ -481,7 +486,7 @@ Resources:
     Properties:
       FunctionName: WatchExpense_Advances_UpdateAdvance
       CodeUri: ./cmd/functions/advances/update-advance
-      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Role: !GetAtt WatchExpenseDynamoDBLambdaRole.Arn
       Events:
         ApiEvent:
           Type: Api
@@ -496,7 +501,7 @@ Resources:
     Properties:
       FunctionName: WatchExpense_Advances_UpdateAdvanceStatus
       CodeUri: ./cmd/functions/advances/update-advance-status
-      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Role: !GetAtt WatchExpenseDynamoDBLambdaRole.Arn
       Events:
         ApiEvent:
           Type: Api
@@ -511,7 +516,7 @@ Resources:
     Properties:
       FunctionName: WatchExpense_Advances_GetAdvanceSummary
       CodeUri: ./cmd/functions/advances/get-advances-summary
-      Role: !GetAtt WatchExpenseLambdaExecutionRole.Arn
+      Role: !GetAtt WatchExpenseDynamoDBLambdaRole.Arn
       Events:
         ApiEvent:
           Type: Api
@@ -558,9 +563,10 @@ Resources:
       BinaryMediaTypes:
         - "multipart/form-data"
 
-  WatchExpenseS3LambdaExecutionRole:
+  WatchExpenseS3DynamoDBLambdaRole:
     Type: 'AWS::IAM::Role'
     Properties:
+      RoleName: WatchExpense-S3-DynamoDB-Lambda-Role
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -570,8 +576,9 @@ Resources:
             Action: 'sts:AssumeRole'
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - !Ref WatchExpenseDynamoDBAccessPolicy
       Policies:
-        - PolicyName: WatchExpenseS3AccessPolicy
+        - PolicyName: S3AccessPolicy
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
@@ -594,7 +601,7 @@ Resources:
     Properties:
       FunctionName: WatchExpense_Images_UploadImage
       CodeUri: ./cmd/functions/images/upload
-      Role: !GetAtt WatchExpenseS3LambdaExecutionRole.Arn
+      Role: !GetAtt WatchExpenseS3DynamoDBLambdaRole.Arn
       Events:
         ApiEvent:
           Type: Api
@@ -609,7 +616,7 @@ Resources:
     Properties:
       FunctionName: WatchExpense_Images_DeleteImage
       CodeUri: ./cmd/functions/images/delete
-      Role: !GetAtt WatchExpenseS3LambdaExecutionRole.Arn
+      Role: !GetAtt WatchExpenseS3DynamoDBLambdaRole.Arn
       Events:
         ApiEvent:
           Type: Api
@@ -624,7 +631,7 @@ Resources:
     Properties:
       FunctionName: WatchExpense_Images_GetImageDownloadURL
       CodeUri: ./cmd/functions/images/get-download-url
-      Role: !GetAtt WatchExpenseS3LambdaExecutionRole.Arn
+      Role: !GetAtt WatchExpenseS3DynamoDBLambdaRole.Arn
       Events:
         ApiEvent:
           Type: Api
