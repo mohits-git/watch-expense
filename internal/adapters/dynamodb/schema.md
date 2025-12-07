@@ -128,6 +128,14 @@
     "SK": "DEPARTMENT#<projectID>",
     "DepartmentID": "uuid"
   }
+  /* -----------------------------------------------------------
+     IMAGE - USER METADATA
+  ------------------------------------------------------------*/
+  {
+    "PK": "IMAGE",
+    "SK": "IMAGE#<ImageURL>",
+    "UserID": "uuid",
+  }
 ]
 ```
 
