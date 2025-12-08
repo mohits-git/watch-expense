@@ -529,27 +529,6 @@ Resources:
     Type: 'AWS::S3::Bucket'
     Properties:
       BucketName: watch-expense-bucket
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: false
-        BlockPublicPolicy: false
-        IgnorePublicAcls: false
-        RestrictPublicBuckets: false
-  WatchExpensePublicBucketPolicy:
-    Type: 'AWS::S3::BucketPolicy'
-    Properties:
-      Bucket: !Ref WatchExpensePublicBucket
-      PolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal: '*'
-            Action: 's3:GetObject'
-            Resource:
-              Fn::Join:
-                - ''
-                - - 'arn:aws:s3:::'
-                  - Ref: 'WatchExpensePublicBucket'
-                  - '/*'
 
   WatchExpenseImageUploadAPI:
     Type: 'AWS::Serverless::Api'
